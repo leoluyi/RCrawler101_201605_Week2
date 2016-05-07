@@ -1,0 +1,755 @@
+---
+title: "RCrawler101-201512"
+author: "Leo Lu (modified from Mansun Kuo)"
+date: '`r Sys.Date()`'
+output: slidy_presentation
+subtitle: Week 2
+---
+
+```{r include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(warning = TRUE,
+                      echo = TRUE,
+                      message = TRUE,
+                      fig.align='center',
+                      cache=FALSE)
+knitr::opts_knit$set(root.dir = '.')
+```
+
+## Install: Chrome Extension
+
++ [EditThisCookie](https://chrome.google.com/webstore/detail/editthiscookie/fngmhnnpilhplaeedifhccceomclgfbg?hl=zh-TW)
+
++ [XPath Helper](https://chrome.google.com/webstore/detail/xpath-helper/hgimnogjllphhhkhlmebbmlgjoejdpjl?hl=zh-TW)
+
++ [JSON Viewer](https://chrome.google.com/webstore/detail/json-viewer/gbmdgpbipfallnflgajpaliibnhdgobh)
+
+
+
+## Outline
+
+- Recap for observation skills
+- R Basic (quick recap) and RStudio IDE
+- Crawler’s toolkits in R
+- Save your data
+- Case study
+- References
+
+
+## Recap Observation Skills and HTTP request for Connection
+
++ URL, Method, GET, POST, Headers, Body
++ Excample: PTT Gossiping
+
+
+
+## Hello RStudio
+
+<img src="resources/img/hello_rstudio.png" width="1000">
+
+
+## Must-known keyboard shortcuts
+
+[All RStudio keyboard shortcuts](https://support.rstudio.com/hc/en-us/articles/200711853-Keyboard-Shortcuts)
+
+Description                      | Windows & Linux    | Mac
+-------------------------------- | ------------------ | ---
+Attempt completion / Indent	     | Tab                | Tab
+Run current line/selection       | Ctrl+Enter         | Command+Enter
+Comment/uncomment current line/selection | Ctrl+Shift+C | Command+Shift+C
+Reindent lines                   | Ctrl+I             | Command+I
+
+
+
+## R recap
+
+- How to get help
+- Working Environment
+- Basic Data Structure
+- Function
+- if/else, for, tryCache
+- [magrittr](https://github.com/smbache/magrittr)
+- [data.table](https://cran.r-project.org/web/packages/data.table/index.html)
+
+
+## How to get help
+
+- `?`: Access ducument in R console
+- `??`: Search the halp system
+- google with appropriate keyword. For example:
+    - R {package name}
+    - R {algorithm name}
+- Forum
+    - [Stack Overflow](http://stackoverflow.com/questions/tagged/r)  
+      A question and answer site for programmers
+    - [Taiwan R user Group](http://www.meetup.com/Taiwan-R/)  
+      A free R/data analysis user group in Taiwan
+    - [PTT R_Language board](https://www.ptt.cc/bbs/R_Language/index.html)  
+      A bbs forum for R in Taiwan
+
+
+## Working Environment
+
+Using `getwd`/`setwd` to get/set your working directory.
+
+```{r}
+wd = getwd()
+setwd("resources/img")
+getwd()
+setwd(wd)
+getwd()
+```
+
+
+RStudio will set working directory automatically when opening new files.
+
+If you [using Projects](https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects),
+RStudio will change working directory for you automatically.
+
+
+## Basic Data Structure
+
+Vector, Matrix, Array, List and Data frame are the most basic data structure in R.
+These data structures can be mapped into a table according to:
+
+- dimension
+- Homogeneous or Heterogeneous of data type
+
+
+<br> | Homogeneous     | Heterogeneous
+---  | --------------- |-------------
+1d   | Atomic vector   | List
+2d   | Matrix          | Data frame
+nd   | Array	
+
+
+## Vector
+
+Vector is a basic data structure in R. 
+A scalar is a vector of length 1.
+
+
+```{r}
+v1 <- c(1:10)
+v1
+is.vector(v1)
+length(v1)
+s1 <- 2
+s1
+is.vector(s1)
+length(s1)
+```
+
+
+
+## Data Frame
+
+Data frame is a 2-dimension data structure to deal with a table-like heterogeneous data.
+
+```{r}
+df <- data.frame(gender = c("male", "female", "female", "male"),
+                 age = c(33, 18, 24, 26))
+## Add new column in a data frame
+df$city <- c("Taipei", "Taipei", "Hsinchu", "Taichung")
+```
+
+```{r}
+df
+str(df)
+```
+
+
+## List
+
+Elements in a list can be any kinds type and its length is arbitrary.
+Function `str` can help you investigate the structure of a nested list.
+
+
+```{r}
+li <- list(a = 1:10, 
+           b = c("apple", "banana"))
+str(li)
+```
+
+
+```{r}
+li2 <- list(li = li, 
+            c = matrix(1:4, nrow = 2))
+str(li2)
+```
+
+
+
+## Recap: data structure
+
+All data structures above are objects.
+They apply different methods and saved as different type internally.
+
+```{r echo = FALSE}
+x <- data.frame(object = c('c(1, 2.5, 3)', 
+                           'c("male", "female", "female", "male")',
+                           'factor(c("male", "female", "female", "male"))', 
+                           'matrix(1:9, nrow = 3)',
+                           'list(a = 1:10, b = c("apple", "banana"))',
+                           'data.frame(a = 1, b = "z")'))
+x$type <- sapply(parse(text = sprintf("typeof(%s)", x$object)), eval)
+x$class <- sapply(parse(text = sprintf("class(%s)", x$object)), eval)
+knitr::kable(x)
+```
+
+
+
+## Function 
+
+*To understand computations in R, two slogans are helpful:*
+
+- *Everything that exists is an object.*
+- *Everything that happens is a function call."*
+
+*— John Chambers*
+
+
+```{r}
+`+`
+`<-`
+`[`
+`c`
+```
+
+
+## Function in R
+
+A typical function in R may look like:
+
+```{r}
+f <- function(arg1, arg2, ...) {
+    # Some magic happened
+    return()    # return something
+}
+```
+
+- If you don't use `return` to specify the return value, 
+  the return value will be the last expression inside the function.
+- Call by value by default  
+  send a copy of a object into a function and the input object won't change after execution without assignment
+
+
+## If
+
+The basc structure of conditional execution in R is:
+
+```{r, eval=FALSE}
+if (an expression returns TRUE or FALSE) {
+    # do something
+} else if (another expression returns TRUE or FALSE) {
+    # do something
+} else {
+    # do something
+}
+```
+
+
+## for
+
+Iterate items in R.
+
+```{r}
+# iterate a character vector
+for (i in c("a", "b")) {
+    print(i)
+}
+
+# nested loop
+m <- matrix(numeric(), nrow = 2, ncol = 2)
+for (i in 1:nrow(m)) {
+    for (j in 1:ncol(m)) {
+        m[i, j] <- i * j
+    }
+}
+m
+```
+
+
+## tryCache
+
+tryCache let you deal with error handling in R.
+
+```{r, eval=FALSE}
+tryCatch({
+    result <- expr
+}, warning = function(w) {
+    # warning handling 
+}, error = function(e) {
+    # error handling 
+}, finally {
+    #  finally
+})
+```
+
+
+## magrittr
+
+Pipe argument to right-hand side with `%>%`
+
+- x %>% f is equivalent to f(x)
+- x %>% f(y) is equivalent to f(x, y)
+- x %>% f %>% g %>% h is equivalent to h(g(f(x)))
+- x %>% f(y, .) is equivalent to f(y, x)
+- x %>% f(y, z = .) is equivalent to f(y, z = x)
+
+
+## 寫爬蟲的流程
+
+1. 找到資料頁，想像資料要長什麼樣子
+2. 檢查是否為ajax網頁
+3. 找到資料所在的request/response
+
+
+- 儘量把資料撈完整，才足夠轉換成資訊
+- 先設想產出的資料格式(schema)，觀察網頁內容，才知道database table如何設計
+- 先到要搜尋資料的詳細資料頁, 解析資料, 再一層層往上解析, 套上判斷式及迴圈, 完成爬蟲的自動化. 
+
+
+## Crawler's toolkits in R
+
+- [rvest](https://cran.r-project.org/web/packages/rvest/index.html): a web scraper based on httr and xml2
+- [httr](https://cran.r-project.org/web/packages/httr/index.html): toolkit of  [HTTP methods](http://www.w3schools.com/tags/ref_httpmethods.asp) in R
+- [XML](https://cran.r-project.org/web/packages/XML/index.html) & : XML parser
+- [xml2](https://cran.r-project.org/web/packages/xml2/index.html): xml parser based on libxml2
+- [RCurl](https://cran.r-project.org/web/packages/RCurl/index.html): a wrapper of libcurl
+
+
+## rvest
+
+A web scraper designed to work with magrittr.
+
+- Create a html document with `read_html()`
+- Select parts of a document using css selectors or xpath
+    - `html_nodes(doc, css = "<css selector>")`
+    - `html_nodes(doc, xpath = "<css selector>")`
+- Extract components with 
+    - `html_name()`: the name of the tag
+    - `html_text()`: all text inside the tag
+    - `html_attr()`: contents of a single attribute
+    - `html_attrs()`: all attributes
+    - `html_table`: parse tables into data frames 
+
+
+## A simple HTML document
+
+[demo](data/demo.html)
+
+```{r}
+library(magrittr)
+doc = readLines("resources/data/demo.html") %>%
+    paste(collapse = "\n")
+cat(doc)
+```
+
+
+## Create HTML document 
+
+```{r}
+library(rvest)
+doc = read_html("resources/data/demo.html")
+doc
+```
+
+
+## Extract with css
+
+CSS practice
+http://flukeout.github.io/
+
+```{r}
+doc %>% 
+    html_nodes(css = ".character") %>% 
+    html_text
+doc %>% 
+    html_nodes(css = "#title > .link") %>% 
+    html_text
+```
+
+
+## Extract with xpath
+
+```{r}
+doc %>% 
+    html_nodes(xpath = "//*[@class='character']") %>% 
+    html_text
+doc %>% 
+    html_nodes(xpath = "//div[@id='title']/a") %>% 
+    html_text
+```
+
+
+## Extract name of tag
+
+```{r}
+node = doc %>% 
+    html_nodes(css = "#summary") %>% 
+    html_name
+node
+```
+
+
+## Extract link
+
+```{r}
+link = doc %>% 
+    html_nodes(xpath = "/html/body/div[@id='title']/a") %>%
+    html_attr("href")
+link
+```
+
+
+## Extract table
+
+```{r}
+students = doc %>% 
+    html_nodes(xpath = "//table") %>%
+    html_table()
+students
+```
+
+
+## The secret of URL
+
+```
+URL?val1=val1&val2=val2
+```
+
+- The query string is sent in the URL of a
+[GET](http://www.w3schools.com/tags/ref_httpmethods.asp) request
+- Non-ASCII character and some preserved characters need to be encoded with 
+[URL Encode](http://www.w3schools.com/tags/ref_urlencode.asp)
+- In most situation, you may need to manipulate the query string when you 
+write a crawler
+
+
+## Url Encoding in R
+
+```{r}
+URLencode(" ")
+greeting = "你好嗎我很好"
+greeting_enc = URLencode(greeting)
+greeting_enc
+URLdecode(greeting_enc)
+```
+
+
+## Concatenate strings / String formatting
+
+```{r}
+paste0("hihi", greeting)
+paste0("hihi", greeting, 1:3)
+paste("hihi", greeting, 1:3, sep = " ", collapse = ",")
+sprintf("%s,%s嗎?", "hihi", greeting)
+```
+
+
+## Case study: 東森房屋
+
+- [東森房屋](example/etwarm.html)
+
+
+## Exercise
+
+Try to get some houses's information in 台北縣.
+
+
+## HTTP request
+
+A valid HTTP request includes four things:
+
+- **URL**: a unique address for a thing
+- **Method**:
+    - GET: to retrieve a resource
+    - POST: to create a new resource
+- **Headers**: Meta-information about a request
+    - User-Agent
+    - Cookie
+    - Content-type
+    - [List of HTTP header fields](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields)
+- **Body**: data to be send to a server
+
+
+## httr
+
+- Basic Features:
+    - HTTP verbs: `GET()`, `POST()`, `HEAD()`... 
+    - `http_status`: Translate http status code
+       [HTTP status](https://zh.wikipedia.org/wiki/HTTP%E7%8A%B6%E6%80%81%E7%A0%81) code
+    - `headers()`: Access response headers
+    - `content()`: Retrieve the contents of a request
+        - as = "parsed": detect content type automatically and parse the result
+        - as = "text": return character
+        - as = "raw": return binary
+    - `set_cookies()`: set cookles
+    - `add_headers()`: add additional headers to a request.
+
+
+
+## Take a look at header
+
+Try to use TAB to explore object
+
+```{r cache=TRUE}
+library(httr)
+url = "http://ecshweb.pchome.com.tw/search/v3.3/all/results?q=sony&page=1&sort=rnk/dc"
+res = HEAD(url)
+res
+
+# HEAD won't return content
+res$content
+
+# see status code
+http_status(res)
+res$status_code
+
+# extract response headers
+head = headers(res)
+head$`content-type`
+res$headers$`content-type`
+
+# whole object
+res
+```
+
+
+## GET
+
+Use `GET()` to request data from a specific resource
+
+```{r}
+library(httr)
+url = "http://ecshweb.pchome.com.tw/search/v3.3/all/results?q=sony&page=1&sort=rnk/dc"
+res = GET(url)
+res
+
+res$request
+```
+
+
+## Query
+
+You can assign query parameter with `query()` 
+
+```{r}
+url2 = "http://ecshweb.pchome.com.tw/search/v3.3/all/results"
+res2 = GET(url, query = list(q="sony", page="1", sort="rnk/dc"))
+identical(res$content, res2$content)
+```
+
+
+## Use string template
+
+```{r}
+library(whisker)
+
+url_template = paste0("http://ecshweb.pchome.com.tw/search/v3.3/all/results?",
+                      "q={{q}}&page={{page}}&sort={{sort}}", collapse = "")
+url3 = whisker.render(url_template, list(q="sony", page="1", sort="rnk/dc"))
+url3
+res3 = GET(url3)
+identical(res$content, res3$content)
+```
+
+
+## Parse JSON format
+
+Yun can parse 
+[JSON](http://www.w3schools.com/json/)
+with jsonlite in R
+
+```{r}
+library(jsonlite)
+library(magrittr)
+res_df = content(res, as = "text") %>% 
+    fromJSON() %>% 
+    .$prods     # equivelent to (function(x) {x$prods})
+str(res_df)
+```
+
+
+## Parse with loop
+
+```{r}
+res_list = content(res, as = "parsed")
+str(res_list$prods[[1]])
+res_df2 = data.frame()
+for (i in 1:length(res_list$prods)) {
+    res_df2 = rbind(res_df2, 
+                    data.frame(res_list$prods[[i]], 
+                               stringsAsFactors = FALSE))
+}
+identical(res_df, res_df2)
+```
+
+
+## Parse with do.call
+
+
+```{r}
+res_df3 = data.frame(do.call(rbind, res_list$prods))
+identical(res_df, res_df3)
+
+# An ugly data.frame
+str(res_df3)
+```
+
+
+## Use with rvest
+
+- Parse data with appropriate encoding
+- Bware of System Encoding
+- Use `iconv()` and `Sys.setlocale()` in Windows
+- Example: [Yahoo Stock](example/yahoo_stock.html)
+
+
+## Exercise
+
+[行政院環境保護署環境資源資料開放平台](http://opendata.epa.gov.tw/DevelopZone/Sample/UV/)提供了一系列的RESTful Api供大家取用，請試著把
+[紫外線即時監測資料](http://opendata.epa.gov.tw/webapi/api/rest/datastore/355000000I-000004/?format=json)的資料取回來並轉成data.frame
+
+
+## Answer
+
+[紫外線即時監測資料](example/uv.html)
+
+
+## Cookies
+
+- A small piece of data sent from a website and stored in the user's web browser while the user is browsing it
+- Someetimes you may need set cookies with `set_cookies` to retreve a request.
+    - [PTT Gossiping](example/ptt_gossiping.html)
+
+
+## POST
+
+- Submits data to be processed to a specified resource
+- The query string (name/value pairs) is sent in the HTTP message body
+
+
+## Example: Guestbook
+
+[Guestbook](example/guestbook.html)
+
+<img src="resources/img/postGuestBook.png" width="1000">
+
+
+## Exercise: Guestbook
+
+Try to post a message in 
+[App Engine GuestBook](http://apt-bonbon-93413.appspot.com/)
+
+
+## Set header
+
+Sometime you may need to provide appropriate 
+[HTTP header fields](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields)
+with `add_headers()` to make a request.
+
+- [Starbucks](example/starbucks.html)
+
+<img src="resources/img/starbucks.png" width="1000">
+
+
+## XML
+
+Parse XML table with `XML::xmlToDataFrame()`
+
+- [Seven Eleven](example/seven_eleven.html)
+
+
+## Save your data
+
+- write.csv: write data.frame as csv file
+- download.file: save html, jpeg, etc
+- writeBin: write binary object into disk
+- RSQLite: SQLite connector in R
+
+
+## write.csv
+
+```{r}
+library(jsonlite)
+library(httr)
+url = "http://ecshweb.pchome.com.tw/search/v3.3/all/results?q=sony&page=1&sort=rnk/dc"
+res_df = GET(url) %>% 
+    content(res, as = "text") %>% 
+    fromJSON() %>% 
+    .$prods     # equivelent to (function(x) {x$prods})
+write.csv(res_df, "resources/data/pchome.csv", row.names = FALSE)
+```
+
+
+## download.file
+
+To download a file from the Internet.
+download.file takes advantage of internet utilities such as
+curl or wget and may fail if you don't 
+have any of these utilities in your system.
+
+```{r cache = TRUE}
+dest_dir = "resources/data/download"
+dir.create(dest_dir, showWarnings = FALSE, recursive = TRUE)
+
+# Download whole HTML file
+download.file("https://www.r-project.org/", 
+              file.path(dest_dir, "r-project.org.html"))
+
+# Download image
+download.file("https://www.r-project.org/Rlogo.png",
+              file.path(dest_dir, "Rlogo.png"))
+
+list.files(dest_dir)
+```
+
+
+## writeBin
+
+To write binary data to your local disk.
+
+```{r}
+r = GET("http://opendata.epa.gov.tw/webapi/api/rest/datastore/355000000I-000004/?format=json")
+# Set as = "raw" to prevent any character encoding
+bin = content(r, as = "raw")
+writeBin(bin, "resources/data/download/uv.json")
+```
+
+
+## Database
+
+- RSQLite: A light-weight database engine interface in R   
+    - [PChome Example](example/pchome.html)
+- Other relational database connector in R
+    - [RODBC](https://cran.r-project.org/web/packages/RODBC/index.html)
+    - [RJDBC](https://cran.r-project.org/web/packages/RJDBC/index.html)
+    - [RMySQL](https://cran.r-project.org/web/packages/RMySQL/index.html)
+    - ...
+
+
+## Case study
+
+- [東森房屋](example/etwarm.html)
+- [Guestbook](example/guestbook.html)
+- [Yahoo Stock](example/yahoo_stock.html)
+- [紫外線即時監測資料](example/uv.html)
+- [PTT Gossiping](example/ptt_gossiping.html)
+- [Starbucks](example/starbucks.html)
+- [Seven Eleven](example/seven_eleven.html)
+- [PChome](example/pchome.html)
+- [公開資訊觀測站](example/mops.html)
+- [中央氣象局觀測資料查詢系統](example/cwb.html)
+
+
+## References
+
+- [rvest](https://github.com/hadley/rvest)
+- [httr](https://cran.r-project.org/web/packages/httr/index.html)
+- [HTTP Methods](http://www.w3schools.com/tags/ref_httpmethods.asp)
+- [An Introduction to APIs](https://zapier.com/learn/apis/)
+- [Advanced R](http://adv-r.had.co.nz/)
+- [data.table](https://github.com/Rdatatable/data.table)
+- [RSQLite](https://cran.r-project.org/web/packages/RSQLite/index.html)

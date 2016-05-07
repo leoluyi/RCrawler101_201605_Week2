@@ -1,0 +1,46 @@
+---
+title: "`data.table` tutorial with baseball data"
+author: "Leo Lu"
+date: "`r format(Sys.Date(), '%Y-%m-%d')`"
+output: 
+  html_document: 
+    fig_caption: yes
+    keep_md: yes
+    theme: journal
+---
+
+```{r setup, include=FALSE}
+# set global chunk options
+library(knitr)
+opts_chunk$set(cache=FALSE)
+```
+
+## Baseball data
+
+First of all, load required packages.
+
+```{r loadPackages}
+## load packages
+library(ggplot2)
+library(data.table)
+library(Lahman)  # for baseball data
+```
+
+## Merge data
+
+
+
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
