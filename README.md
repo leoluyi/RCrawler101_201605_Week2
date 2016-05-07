@@ -2,15 +2,14 @@
 
 A tutorial of Crawler in R.
 
-This material is modified from mansunkuo's work by leolyui. All 
+This material is modified from mansunkuo's work by leoluyi. All 
 
-- [Slides](http://mansunkuo.github.io/RCrawler101-201512-2/)
-- [The entire series of course](https://github.com/datasci-info/RCrawler101-201512)
+- [Slides](http://leoluyi.github.io/RCrawler101_201605_Week2/)
 
 
 ## Environment
 
-[R Installation Guide](http://mansunkuo.github.io/RCrawler101-201512-2/install_R.html)
+[R Installation Guide](http://leoluyi.github.io/RCrawler101_201605_Week2/install_R.html)
 
 
 ## How to Use This Slides
