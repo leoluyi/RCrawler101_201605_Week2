@@ -1,7 +1,7 @@
 ---
 title: "RCrawler101-201605 (Week2)"
 subtitle: "Week 2"
-author: "Leo Lu<p />(This material is modified from Mansun Kuo)"
+author: "Leo Lu <p/>(This material is modified from Mansun Kuo's work)"
 date: '`r Sys.Date()`'
 ratio: 16x10
 output: 
@@ -9,6 +9,7 @@ output:
     self_contained: true
     katex: false
     theme: material
+    highlight: pygments
     css: resources/css/shower.css
 params:
   refresh: no
@@ -19,21 +20,40 @@ library(knitr)
 knitr::opts_chunk$set(warning = TRUE,
                       echo = TRUE,
                       message = TRUE,
-                      # collapse = T, 
+                      collapse = FALSE,
                       comment = "#>",
                       fig.align='center',
                       cache=FALSE)
 # knitr::opts_knit$set(root.dir = '.')
 ```
 
-# <br><br>Beyond Basic R {.white}
+# <br/><br/>RCrawler101-201605 (Week2) {.white}
 
-<!-- <img src="img/bali.jpg" class="cover"> -->
-
+<img src="resources/img/reptile.jpg" class="cover">
 <p class="white">
-`r Sys.Date()`<br><p style='color:royalblue'>[Leo Lu](https://tw.linkedin.com/pub/mansun-kuo/82/3b4/344)</p>
+`r Sys.Date()`<br/>
+<p style='color:white'>
+  Leo Lu  
+  [Github](https://github.com/leoluyi)  
+  [LinkedIn](https://tw.linkedin.com/in/leoluyi)
+</p>
 </p>
 
+# Outline
+
++ Recap for observation skills (10 min)
++ R Basic (quick recap) and RStudio IDE (10 min)
++ Connection
+    - Crawler’s toolkits in R
++ Parsing Data (50 min)
+    + XPath & CSS
+    + json
+    + xml
+    + html table
+    + regex
++ Save your data (10 min)
++ Case study
++ References
 
 
 # Install: Chrome Extension
@@ -43,27 +63,31 @@ knitr::opts_chunk$set(warning = TRUE,
 + [JSON Viewer](https://chrome.google.com/webstore/detail/json-viewer/gbmdgpbipfallnflgajpaliibnhdgobh)
 
 
+# Recap Observation Skills and HTTP request for Connection
+
++ URL, Method, GET, POST, Headers, Body
++ Excample: [PTT Gossiping](https://www.ptt.cc/bbs/Gossiping/)
+
+
 # R Packages Required
 
 ## Pipeline Coding
-
 - [magrittr](https://github.com/smbache/magrittr)
 
-
 ## Crawler's toolkits in R
-
 - [rvest](https://cran.r-project.org/web/packages/rvest/index.html): a web scraper based on httr and xml2
 - [httr](https://cran.r-project.org/web/packages/httr/index.html): toolkit of  [HTTP methods](http://www.w3schools.com/tags/ref_httpmethods.asp) in R
 - [XML](https://cran.r-project.org/web/packages/XML/index.html) & : XML parser
 - [xml2](https://cran.r-project.org/web/packages/xml2/index.html): xml parser based on libxml2
-- [RCurl](https://cran.r-project.org/web/packages/RCurl/index.html): a wrapper of libcurl
 
 ## misc
-
 - [stringr](): string manipulaiton
 - [data.table](https://github.com/Rdatatable/data.table): extension of data.frame, a powerful ETL tool in R
 
-# Install Packages (if you don't have those packages yet)
+
+# Install Packages
+
+## (if you haven't those packages yet)
 
 ```{r, eval=FALSE}
 ## === install required packages ===
@@ -73,42 +97,38 @@ if(length(pkg_new)) install.packages(pkg_new)
 rm(pkg_new, pkg_list)
 ```
 
+---
 
-# Outline
+## Let's Rock with R! { .shout .shrink }
 
-- Recap for observation skills
-- R Basic (quick recap) and RStudio IDE
-- Crawler’s toolkits in R
-- Save your data
-- Case study
-- References
-
-
-# Recap Observation Skills and HTTP request for Connection
-
-+ URL, Method, GET, POST, Headers, Body
-+ Excample: [PTT Gossiping](https://www.ptt.cc/bbs/Gossiping/)
-
-
+---
 
 # Hello RStudio
 
-<img src="resources/img/hello_rstudio.png" alt="rstudio" style="max-width: 800px;">
+<img src="resources/img/hello_rstudio.png" alt="rstudio" width= "800">
 
+# RStudio Settings
+
+<img src="resources/img/rstudio_setting_1.png" alt="" style="width:auto; max-width:1000px;">
+
+<img src="resources/img/rstudio_setting_2.png" alt="" style="width:auto; max-width:1000px;">
+</p>
 
 # Must-known keyboard shortcuts
 
 [All RStudio keyboard shortcuts](https://support.rstudio.com/hc/en-us/articles/200711853-Keyboard-Shortcuts)
 
 <div style="font-size: 80%">
-Description      |  Windows & Linux      |     Mac                 |
------------------|:---------------------:|:-----------------------:|
-Attempt completion / Indent | <kbd>Tab</kbd>     | <kbd>Tab</kbd>  |
-Run current line/selection  | <kbd>Ctrl</kbd>+<kbd>Enter</kbd> | <kbd>Cmd</kbd>+<kbd>Enter</kbd> |
-Comment/uncomment current line/selection | <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd> | <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd> |
-Reindent lines              | <kbd>Ctrl</kbd>+<kbd>I</kbd> | <kbd>Cmd</kbd>+<kbd>I</kbd> |
+| Description      |  Windows & Linux      |     Mac                 |
+|------------------|:---------------------:|:-----------------------:|
+| Attempt completion / Indent | <kbd>Tab</kbd>     | <kbd>Tab</kbd>  |
+| Run current line/selection  | <kbd>Ctrl</kbd>+<kbd>Enter</kbd> | <kbd>⌘</kbd>+<kbd>↩︎</kbd> |
+| Comment/uncomment current line/selection | <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd> | <kbd>⌘</kbd>+<kbd>⇧</kbd>+<kbd>C</kbd> |
+| Reindent lines              | <kbd>Ctrl</kbd>+<kbd>I</kbd> | <kbd>⌘</kbd>+<kbd>I</kbd> |
+| Insert pipe operator | <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>M</kbd> | <kbd>⌘</kbd>+<kbd>⇧</kbd>+<kbd>M</kbd>
 </div>
 
+<img src="resources/img/rstudio_shortcut.png">
 
 # R recap
 
@@ -139,6 +159,8 @@ Reindent lines              | <kbd>Ctrl</kbd>+<kbd>I</kbd> | <kbd>Cmd</kbd>+<kbd
 
 # Working Environment
 
+__Check your working directory everytime you start to work!__
+
 Using `getwd`/`setwd` to get/set your working directory.
 
 ```{r working_dir, eval=FALSE}
@@ -158,27 +180,28 @@ RStudio will change working directory for you automatically.
 
 # Basic Data Structure
 
-Vector, Matrix, Array, List and Data frame are the most basic data structure in R.
+`Vector`, `Matrix`, `Array`, `List` and `Data frame` are the most basic data structure in R.
 These data structures can be mapped into a table according to:
 
 - dimension
 - Homogeneous or Heterogeneous of data type
 
 
-<br> | Homogeneous     | Heterogeneous
----  | --------------- |-------------
-1d   | Atomic vector   | List
-2d   | Matrix          | Data frame
-nd   | Array	
+|      | Homogeneous       | Heterogeneous  |
+| ---- | ----------------- |--------------- |
+| 1d   | _Atomic vector_   | _List_         |
+| 2d   | Matrix            | Data frame     |
+| nd   | Array             |              	|
 
 
-## Vector
+# (Atomic) Vector
 
 Vector is a basic data structure in R. 
+Atomic vectors are linear vectors of a single primitive type.
 A scalar is a vector of length 1.
 
 
-```{r}
+```{r, collapse=TRUE}
 v1 <- c(1:10)
 v1
 is.vector(v1)
@@ -189,26 +212,9 @@ is.vector(s1)
 length(s1)
 ```
 
+# List
 
-
-## Data Frame
-
-Data frame is a 2-dimension data structure to deal with a table-like heterogeneous data.
-
-```{r}
-df <- data.frame(gender = c("male", "female", "female", "male"),
-                 age = c(33, 18, 24, 26))
-## Add new column in a data frame
-df$city <- c("Taipei", "Taipei", "Hsinchu", "Taichung")
-```
-
-```{r}
-df
-str(df)
-```
-
-
-## List
+Lists are also vectors, but not _atomic vectors_. Lists are generic vectors, with (naturally) different semantics.
 
 Elements in a list can be any kinds type and its length is arbitrary.
 Function `str` can help you investigate the structure of a nested list.
@@ -228,8 +234,24 @@ str(li2)
 ```
 
 
+# Data Frame
 
-## Recap: data structure
+Data frame is a 2-dimension data structure to deal with a table-like heterogeneous data.
+
+```{r}
+df <- data.frame(gender = c("male", "female", "female", "male"),
+                 age = c(33, 18, 24, 26))
+## Add new column in a data frame
+df$city <- c("Taipei", "Taipei", "Hsinchu", "Taichung")
+```
+
+```{r}
+df
+str(df)
+```
+
+
+# Recap: data structure
 
 All data structures above are objects.
 They apply different methods and saved as different type internally.
@@ -248,17 +270,18 @@ knitr::kable(x)
 
 
 
-## Function 
+# Function 
 
-*To understand computations in R, two slogans are helpful:*
+To understand computations in R, two slogans are helpful:  
 
-- *Everything that exists is an object.*
-- *Everything that happens is a function call."*
+> Everything that exists is an object.  
+> Everything that happens is a function call.  
 
-*— John Chambers*
+**John Chambers**
 
+<br/>
 
-```{r}
+```{r, collapse=TRUE}
 `+`
 `<-`
 `[`
@@ -266,24 +289,24 @@ knitr::kable(x)
 ```
 
 
-## Function in R
+# Function in R
 
 A typical function in R may look like:
 
 ```{r}
 f <- function(arg1, arg2, ...) {
     # Some magic happened
-    return()    # return something
+    return(sth)    # return something
 }
 ```
 
 - If you don't use `return` to specify the return value, 
-  the return value will be the last expression inside the function.
+  the return value will be the _last expression_ inside the function.
 - Call by value by default  
-  send a copy of a object into a function and the input object won't change after execution without assignment
+    send a copy of a object into a function and the input object won't change after execution without assignment
 
 
-## If
+# If
 
 The basc structure of conditional execution in R is:
 
@@ -298,7 +321,7 @@ if (an expression returns TRUE or FALSE) {
 ```
 
 
-## for
+# for
 
 Iterate items in R.
 
@@ -331,7 +354,7 @@ tryCatch({
 }, error = function(e) {
     # error handling 
 }, finally {
-    #  finally
+    # finally
 })
 ```
 
@@ -350,25 +373,194 @@ Pipe argument to right-hand side with `%>%`
 - x %>% f(y, z = .) is equivalent to f(y, z = x)
 ```
 
-# 寫爬蟲的流程
+---
+## Workflow of Crawler Design {.shout}
+---
 
 1. 找到資料頁，想像資料要長什麼樣子
-2. 檢查是否為ajax網頁
-3. 找到資料所在的request/response
+2. 找到資料所在的request/response
+3. 一層層往上解析
 
 
-- 儘量把資料撈完整，才足夠轉換成資訊
-- 先設想產出的資料格式(schema)，觀察網頁內容，才知道database table如何設計
-- 先到要搜尋資料的詳細資料頁, 解析資料, 再一層層往上解析, 套上判斷式及迴圈, 完成爬蟲的自動化. 
+- 儘量把資料撈完整，才足夠轉換成資訊。
+- 先設想產出的資料格式(schema)，觀察網頁內容，才知道database table如何設計。
+- 先到要搜尋資料的詳細資料頁，解析資料，再一層層往上解析，套上判斷式及迴圈, 完成爬蟲的自動化。
 
 
-## Crawler's toolkits in R
+# Crawler's toolkits in R
 
 - [rvest](https://cran.r-project.org/web/packages/rvest/index.html): a web scraper based on httr and xml2
 - [httr](https://cran.r-project.org/web/packages/httr/index.html): toolkit of  [HTTP methods](http://www.w3schools.com/tags/ref_httpmethods.asp) in R
 - [XML](https://cran.r-project.org/web/packages/XML/index.html) & : XML parser
 - [xml2](https://cran.r-project.org/web/packages/xml2/index.html): xml parser based on libxml2
 - [RCurl](https://cran.r-project.org/web/packages/RCurl/index.html): a wrapper of libcurl
+
+
+---
+## Web Connector with R {.shout}
+---
+
+# HTTP request
+
+A valid HTTP request includes four things:
+
+- **URL**: a unique address for a thing
+- **Method**:
+    - GET: to retrieve a resource
+    - POST: to create a new resource
+- **Headers**: Meta-information about a request
+    - User-Agent
+    - Cookie
+    - Content-type
+    - [List of HTTP header fields](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields)
+- **Body**: data to be send to a server
+
+
+# Web Connector in R
+- `httr`
+- `RCurl`
+- `download.file()`
+- Socket Connection Tools:
+    - socketConnection
+    - `make.socket` / `read.socket` / `close.socket`
+
+# Connection: GET Method
+
+Use `GET()` to request data from a specific resource
+
+## 起手式
+
+```{r, eval=FALSE}
+## Not Run
+library(httr)
+library(rvest)
+res <- GET(
+  url = "http://httpbin.org/get",
+  add_headers(a = 1, b = 2),
+  set_cookies(c = 1, d = 2)
+)
+res_text <- content(res, as = "text", encoding = "UTF-8")
+doc <- read_html(res_text, encoding = "UTF-8")
+```
+
+
+# 一個例子學會第一隻爬蟲
+
+- PTT Gossiping
+
+<a href="https://www.ptt.cc/bbs/Gossiping/index.html" target="_blank">
+<img src="resources/img/ptt_gossiping.png" width=640>
+</a>
+
+
+```{r}
+library(magrittr)
+library(httr)
+library(rvest)
+url <- "https://www.ptt.cc/bbs/Gossiping/index.html"
+doc <- GET(url, 
+           set_cookies('over18'='1')) %>%  # over18 cookie
+  content(as = "text", encoding = "UTF-8") %>% 
+  read_html
+
+doc %>% 
+    html_nodes(xpath = '//*[@id="action-bar-container"]/div/div[2]/a[2]') %>% 
+    html_attr("href")
+```
+
+# httr
+
+- Basic Features:
+    - HTTP verbs: `GET()`, `POST()`, `HEAD()`... 
+    - `http_status`: Translate http status code
+       [HTTP status](https://zh.wikipedia.org/wiki/HTTP%E7%8A%B6%E6%80%81%E7%A0%81) code
+    - `headers()`: Access response headers
+    - `content()`: Retrieve the contents of a request
+        - as = "parsed": detect content type automatically and parse the result
+        - as = "text": return character
+        - as = "raw": return binary
+    - `set_cookies()`: set cookles
+    - `add_headers()`: add additional headers to a request.
+
+# httr basics
+
+```{r, collapse=TRUE}
+library(httr)
+res <- GET(
+  url = "http://httpbin.org/get",
+  add_headers(a = 1, b = 2),
+  set_cookies(c = 1, d = 2)
+)
+
+status_code(res)
+
+headers(res)
+
+res_text <- content(res, type = "text", encoding = "UTF-8")
+```
+
+<br/>
+## The response
+
+### The status code
+```{r, collapse=TRUE}
+res <- GET("http://httpbin.org/get")
+
+# Get an informative description:
+http_status(res)
+
+# Or just access the raw code:
+res$status_code
+
+# highly recommend using one of these functions whenever you're using httr inside a function to make sure you find out about errors as soon as possible.
+warn_for_status(res)
+stop_for_status(res)
+```
+
+<br/>
+### THe Body
+
+3 ways to access the body of the request:
+
++ text
+```{r, collapse=TRUE}
+res <- GET("http://httpbin.org/get")
+content(res, "text", encoding = "UTF-8")  # accesses the body as a character vector
+```
+
++ binary
+```{r, collapse=TRUE}
+(bin <- content(res, "raw"))  # raw (binary) vector
+# writeBin(bin, "myfile.txt") # the highest fidelity way of saving files to disk
+```
+
++ auto parsed
+httr provides a number of default parsers for common file types:  
+html_document, csv, json, jpeg, png. See `?httr::content`
+```{r, collapse=TRUE}
+content(res, "parsed")
+```
+
+
+
+---
+
+# Query String
+
+You can assign query parameter with `query()` 
+
+```{r}
+res1 <- GET(
+  "http://ecshweb.pchome.com.tw/search/v3.3/all/results?q=sony&page=1&sort=rnk/dc"
+)
+
+url2 <- "http://ecshweb.pchome.com.tw/search/v3.3/all/results"
+res2 <- GET(url2,
+           query = list(q="sony", page="1", sort="rnk/dc"))
+identical(res1$content, res2$content)
+```
+
+
 
 
 # rvest
@@ -492,7 +684,7 @@ URLdecode(greeting_enc)
 ```
 
 
-## Concatenate strings / String formatting
+# Concatenate strings / String formatting
 
 ```{r}
 paste0("hihi", greeting)
@@ -502,101 +694,19 @@ sprintf("%s,%s嗎?", "hihi", greeting)
 ```
 
 
-## Case study: 東森房屋
+# Case study: 東森房屋
 
-- [東森房屋](example/etwarm.html)
+- [東森房屋](resources/example/etwarm.html)
 
 
-## Exercise
+# Exercise
 
 Try to get some houses's information in 台北縣.
 
 
-## HTTP request
-
-A valid HTTP request includes four things:
-
-- **URL**: a unique address for a thing
-- **Method**:
-    - GET: to retrieve a resource
-    - POST: to create a new resource
-- **Headers**: Meta-information about a request
-    - User-Agent
-    - Cookie
-    - Content-type
-    - [List of HTTP header fields](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields)
-- **Body**: data to be send to a server
 
 
-## httr
-
-- Basic Features:
-    - HTTP verbs: `GET()`, `POST()`, `HEAD()`... 
-    - `http_status`: Translate http status code
-       [HTTP status](https://zh.wikipedia.org/wiki/HTTP%E7%8A%B6%E6%80%81%E7%A0%81) code
-    - `headers()`: Access response headers
-    - `content()`: Retrieve the contents of a request
-        - as = "parsed": detect content type automatically and parse the result
-        - as = "text": return character
-        - as = "raw": return binary
-    - `set_cookies()`: set cookles
-    - `add_headers()`: add additional headers to a request.
-
-
-
-## Take a look at header
-
-Try to use TAB to explore object
-
-```{r cache=TRUE}
-library(httr)
-url = "http://ecshweb.pchome.com.tw/search/v3.3/all/results?q=sony&page=1&sort=rnk/dc"
-res = HEAD(url)
-res
-
-# HEAD won't return content
-res$content
-
-# see status code
-http_status(res)
-res$status_code
-
-# extract response headers
-head = headers(res)
-head$`content-type`
-res$headers$`content-type`
-
-# whole object
-res
-```
-
-
-## GET
-
-Use `GET()` to request data from a specific resource
-
-```{r}
-library(httr)
-url = "http://ecshweb.pchome.com.tw/search/v3.3/all/results?q=sony&page=1&sort=rnk/dc"
-res = GET(url)
-res
-
-res$request
-```
-
-
-## Query
-
-You can assign query parameter with `query()` 
-
-```{r}
-url2 = "http://ecshweb.pchome.com.tw/search/v3.3/all/results"
-res2 = GET(url, query = list(q="sony", page="1", sort="rnk/dc"))
-identical(res$content, res2$content)
-```
-
-
-## Use string template
+# Use string template
 
 ```{r}
 library(whisker)
@@ -610,7 +720,7 @@ identical(res$content, res3$content)
 ```
 
 
-## Parse JSON format
+# Parse JSON format
 
 Yun can parse 
 [JSON](http://www.w3schools.com/json/)
@@ -619,6 +729,7 @@ with jsonlite in R
 ```{r}
 library(jsonlite)
 library(magrittr)
+res <- GET("http://ecshweb.pchome.com.tw/search/v3.3/all/results?q=sony&page=1&sort=rnk/dc")
 res_df = content(res, as = "text") %>% 
     fromJSON() %>% 
     .$prods     # equivelent to (function(x) {x$prods})
@@ -626,7 +737,7 @@ str(res_df)
 ```
 
 
-## Parse with loop
+# Parse with loop
 
 ```{r}
 res_list = content(res, as = "parsed")
@@ -641,7 +752,7 @@ identical(res_df, res_df2)
 ```
 
 
-## Parse with do.call
+# Parse with do.call
 
 
 ```{r}
@@ -653,15 +764,15 @@ str(res_df3)
 ```
 
 
-## Use with rvest
+# Use with rvest
 
 - Parse data with appropriate encoding
 - Bware of System Encoding
 - Use `iconv()` and `Sys.setlocale()` in Windows
-- Example: [Yahoo Stock](example/yahoo_stock.html)
+- Example: [Yahoo Stock](resources/example/yahoo_stock.html)
 
 
-## Exercise
+# Exercise
 
 [行政院環境保護署環境資源資料開放平台](http://opendata.epa.gov.tw/DevelopZone/Sample/UV/)提供了一系列的RESTful Api供大家取用，請試著把
 [紫外線即時監測資料](http://opendata.epa.gov.tw/webapi/api/rest/datastore/355000000I-000004/?format=json)的資料取回來並轉成data.frame
@@ -669,14 +780,14 @@ str(res_df3)
 
 ## Answer
 
-[紫外線即時監測資料](example/uv.html)
+[紫外線即時監測資料](resources/example/uv.html)
 
 
 ## Cookies
 
 - A small piece of data sent from a website and stored in the user's web browser while the user is browsing it
 - Someetimes you may need set cookies with `set_cookies` to retreve a request.
-    - [PTT Gossiping](example/ptt_gossiping.html)
+    - [PTT Gossiping](resources/example/ptt_gossiping.html)
 
 
 ## POST
@@ -687,7 +798,7 @@ str(res_df3)
 
 ## Example: Guestbook
 
-[Guestbook](example/guestbook.html)
+[Guestbook](resources/example/guestbook.html)
 
 <img src="resources/img/postGuestBook.png" width="1000">
 
@@ -704,7 +815,7 @@ Sometime you may need to provide appropriate
 [HTTP header fields](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields)
 with `add_headers()` to make a request.
 
-- [Starbucks](example/starbucks.html)
+- [Starbucks](resources/example/starbucks.html)
 
 <img src="resources/img/starbucks.png" width="1000">
 
@@ -713,10 +824,13 @@ with `add_headers()` to make a request.
 
 Parse XML table with `XML::xmlToDataFrame()`
 
-- [Seven Eleven](example/seven_eleven.html)
+- [Seven Eleven](resources/example/seven_eleven.html)
 
+---
+## Save your data {.shout}
+---
 
-## Save your data
+# Save your data
 
 - write.csv: write data.frame as csv file
 - download.file: save html, jpeg, etc
@@ -724,9 +838,9 @@ Parse XML table with `XML::xmlToDataFrame()`
 - RSQLite: SQLite connector in R
 
 
-## write.csv
+# write.csv
 
-```{r}
+```{r, eval=FALSE}
 library(jsonlite)
 library(httr)
 url = "http://ecshweb.pchome.com.tw/search/v3.3/all/results?q=sony&page=1&sort=rnk/dc"
@@ -745,7 +859,7 @@ download.file takes advantage of internet utilities such as
 curl or wget and may fail if you don't 
 have any of these utilities in your system.
 
-```{r cache = TRUE}
+```{r, eval=FALSE}
 dest_dir = "resources/data/download"
 dir.create(dest_dir, showWarnings = FALSE, recursive = TRUE)
 
@@ -765,7 +879,7 @@ list.files(dest_dir)
 
 To write binary data to your local disk.
 
-```{r}
+```{r, eval=FALSE}
 r = GET("http://opendata.epa.gov.tw/webapi/api/rest/datastore/355000000I-000004/?format=json")
 # Set as = "raw" to prevent any character encoding
 bin = content(r, as = "raw")
@@ -776,7 +890,7 @@ writeBin(bin, "resources/data/download/uv.json")
 # Database
 
 - RSQLite: A light-weight database engine interface in R   
-    - [PChome Example](example/pchome.html)
+    - [PChome Example](resources/example/pchome.html)
 - Other relational database connector in R
     - [RODBC](https://cran.r-project.org/web/packages/RODBC/index.html)
     - [RJDBC](https://cran.r-project.org/web/packages/RJDBC/index.html)
@@ -786,16 +900,17 @@ writeBin(bin, "resources/data/download/uv.json")
 
 # Case study
 
-- [東森房屋](example/etwarm.html)
-- [Guestbook](example/guestbook.html)
-- [Yahoo Stock](example/yahoo_stock.html)
-- [紫外線即時監測資料](example/uv.html)
-- [PTT Gossiping](example/ptt_gossiping.html)
-- [Starbucks](example/starbucks.html)
-- [Seven Eleven](example/seven_eleven.html)
-- [PChome](example/pchome.html)
-- [公開資訊觀測站](example/mops.html)
-- [中央氣象局觀測資料查詢系統](example/cwb.html)
+- [東森房屋](resources/example/etwarm.html)
+- [Guestbook](resources/example/guestbook.html)
+- [Yahoo Stock](resources/example/yahoo_stock.html)
+- [紫外線即時監測資料](resources/example/uv.html)
+- [PTT Gossiping](resources/example/ptt_gossiping.html)
+- [Starbucks](resources/example/starbucks.html)
+- [Seven Eleven](resources/example/seven_eleven.html)
+- [FamilyMart](resources/example/family_mart.html) # 待補
+- [PChome](resources/example/pchome.html)
+- [公開資訊觀測站](resources/example/mops.html)
+- [中央氣象局觀測資料查詢系統](resources/example/cwb.html)
 
 
 # References
