@@ -18,18 +18,18 @@ output:
 
 ## 內容大綱
 
-1. 複習觀察技巧
+1. 複習觀察技巧 (10 min)
 
-2. 爬蟲設計的流程
+2. 爬蟲設計的流程 (40 min)
 
-3. Parsing技巧
+3. Parsing技巧 (50 min)
     + XPath & CSS
     + json
     + xml
     + html table
     + regex
  
-4. Save Results
+4. Save Results (10 min)
 
 
 --------------------------------------------------------------
