@@ -1,32 +1,80 @@
 ---
-title: "RCrawler101-201512"
-author: "Leo Lu (modified from Mansun Kuo)"
+title: "RCrawler101-201605 (Week2)"
+subtitle: "Week 2"
+author: "Leo Lu<p />(This material is modified from Mansun Kuo)"
 date: '`r Sys.Date()`'
-output: slidy_presentation
-subtitle: Week 2
+ratio: 16x10
+output: 
+  rmdshower::shower:
+    self_contained: true
+    katex: false
+    theme: material
+    css: resources/css/shower.css
+params:
+  refresh: no
 ---
 
-```{r include=FALSE}
+```{r, include=FALSE}
 library(knitr)
 knitr::opts_chunk$set(warning = TRUE,
                       echo = TRUE,
                       message = TRUE,
+                      # collapse = T, 
+                      comment = "#>",
                       fig.align='center',
                       cache=FALSE)
-knitr::opts_knit$set(root.dir = '.')
+# knitr::opts_knit$set(root.dir = '.')
 ```
 
-## Install: Chrome Extension
+# <br><br>Beyond Basic R {.white}
+
+<!-- <img src="img/bali.jpg" class="cover"> -->
+
+<p class="white">
+`r Sys.Date()`<br><p style='color:royalblue'>[Leo Lu](https://tw.linkedin.com/pub/mansun-kuo/82/3b4/344)</p>
+</p>
+
+
+
+# Install: Chrome Extension
 
 + [EditThisCookie](https://chrome.google.com/webstore/detail/editthiscookie/fngmhnnpilhplaeedifhccceomclgfbg?hl=zh-TW)
-
 + [XPath Helper](https://chrome.google.com/webstore/detail/xpath-helper/hgimnogjllphhhkhlmebbmlgjoejdpjl?hl=zh-TW)
-
 + [JSON Viewer](https://chrome.google.com/webstore/detail/json-viewer/gbmdgpbipfallnflgajpaliibnhdgobh)
 
 
+# R Packages Required
 
-## Outline
+## Pipeline Coding
+
+- [magrittr](https://github.com/smbache/magrittr)
+
+
+## Crawler's toolkits in R
+
+- [rvest](https://cran.r-project.org/web/packages/rvest/index.html): a web scraper based on httr and xml2
+- [httr](https://cran.r-project.org/web/packages/httr/index.html): toolkit of  [HTTP methods](http://www.w3schools.com/tags/ref_httpmethods.asp) in R
+- [XML](https://cran.r-project.org/web/packages/XML/index.html) & : XML parser
+- [xml2](https://cran.r-project.org/web/packages/xml2/index.html): xml parser based on libxml2
+- [RCurl](https://cran.r-project.org/web/packages/RCurl/index.html): a wrapper of libcurl
+
+## misc
+
+- [stringr](): string manipulaiton
+- [data.table](https://github.com/Rdatatable/data.table): extension of data.frame, a powerful ETL tool in R
+
+# Install Packages (if you don't have those packages yet)
+
+```{r, eval=FALSE}
+## === install required packages ===
+pkg_list <- c("magrittr", "httr", "rvest", "stringr", "data.table")
+pkg_new <- pkg_list[!(pkg_list %in% installed.packages()[,"Package"])]
+if(length(pkg_new)) install.packages(pkg_new)
+rm(pkg_new, pkg_list)
+```
+
+
+# Outline
 
 - Recap for observation skills
 - R Basic (quick recap) and RStudio IDE
@@ -36,32 +84,33 @@ knitr::opts_knit$set(root.dir = '.')
 - References
 
 
-## Recap Observation Skills and HTTP request for Connection
+# Recap Observation Skills and HTTP request for Connection
 
 + URL, Method, GET, POST, Headers, Body
-+ Excample: PTT Gossiping
++ Excample: [PTT Gossiping](https://www.ptt.cc/bbs/Gossiping/)
 
 
 
-## Hello RStudio
+# Hello RStudio
 
-<img src="resources/img/hello_rstudio.png" width="1000">
+<img src="resources/img/hello_rstudio.png" alt="rstudio" style="max-width: 800px;">
 
 
-## Must-known keyboard shortcuts
+# Must-known keyboard shortcuts
 
 [All RStudio keyboard shortcuts](https://support.rstudio.com/hc/en-us/articles/200711853-Keyboard-Shortcuts)
 
-Description                      | Windows & Linux    | Mac
--------------------------------- | ------------------ | ---
-Attempt completion / Indent	     | Tab                | Tab
-Run current line/selection       | Ctrl+Enter         | Command+Enter
-Comment/uncomment current line/selection | Ctrl+Shift+C | Command+Shift+C
-Reindent lines                   | Ctrl+I             | Command+I
+<div style="font-size: 80%">
+Description      |  Windows & Linux      |     Mac                 |
+-----------------|:---------------------:|:-----------------------:|
+Attempt completion / Indent | <kbd>Tab</kbd>     | <kbd>Tab</kbd>  |
+Run current line/selection  | <kbd>Ctrl</kbd>+<kbd>Enter</kbd> | <kbd>Cmd</kbd>+<kbd>Enter</kbd> |
+Comment/uncomment current line/selection | <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd> | <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd> |
+Reindent lines              | <kbd>Ctrl</kbd>+<kbd>I</kbd> | <kbd>Cmd</kbd>+<kbd>I</kbd> |
+</div>
 
 
-
-## R recap
+# R recap
 
 - How to get help
 - Working Environment
@@ -72,7 +121,7 @@ Reindent lines                   | Ctrl+I             | Command+I
 - [data.table](https://cran.r-project.org/web/packages/data.table/index.html)
 
 
-## How to get help
+# How to get help
 
 - `?`: Access ducument in R console
 - `??`: Search the halp system
@@ -88,11 +137,11 @@ Reindent lines                   | Ctrl+I             | Command+I
       A bbs forum for R in Taiwan
 
 
-## Working Environment
+# Working Environment
 
 Using `getwd`/`setwd` to get/set your working directory.
 
-```{r}
+```{r working_dir, eval=FALSE}
 wd = getwd()
 setwd("resources/img")
 getwd()
@@ -107,7 +156,7 @@ If you [using Projects](https://support.rstudio.com/hc/en-us/articles/200526207-
 RStudio will change working directory for you automatically.
 
 
-## Basic Data Structure
+# Basic Data Structure
 
 Vector, Matrix, Array, List and Data frame are the most basic data structure in R.
 These data structures can be mapped into a table according to:
@@ -270,7 +319,7 @@ m
 ```
 
 
-## tryCache
+# tryCache
 
 tryCache let you deal with error handling in R.
 
@@ -287,18 +336,21 @@ tryCatch({
 ```
 
 
-## magrittr
+# magrittr
+
+<img src="https://github.com/smbache/magrittr/raw/master/inst/logo.png" alt="magrittr logo" style="max-width:100%;" />
 
 Pipe argument to right-hand side with `%>%`
 
+```
 - x %>% f is equivalent to f(x)
 - x %>% f(y) is equivalent to f(x, y)
 - x %>% f %>% g %>% h is equivalent to h(g(f(x)))
 - x %>% f(y, .) is equivalent to f(y, x)
 - x %>% f(y, z = .) is equivalent to f(y, z = x)
+```
 
-
-## 寫爬蟲的流程
+# 寫爬蟲的流程
 
 1. 找到資料頁，想像資料要長什麼樣子
 2. 檢查是否為ajax網頁
@@ -319,7 +371,7 @@ Pipe argument to right-hand side with `%>%`
 - [RCurl](https://cran.r-project.org/web/packages/RCurl/index.html): a wrapper of libcurl
 
 
-## rvest
+# rvest
 
 A web scraper designed to work with magrittr.
 
@@ -335,9 +387,9 @@ A web scraper designed to work with magrittr.
     - `html_table`: parse tables into data frames 
 
 
-## A simple HTML document
+# A simple HTML document
 
-[demo](data/demo.html)
+[demo](resources/data/demo.html)
 
 ```{r}
 library(magrittr)
@@ -347,14 +399,16 @@ cat(doc)
 ```
 
 
-## Create HTML document 
+# Create HTML document 
 
 ```{r}
 library(rvest)
 doc = read_html("resources/data/demo.html")
 doc
+class(doc)
 ```
 
+# Extract elements from HTML document
 
 ## Extract with css
 
@@ -371,7 +425,7 @@ doc %>%
 ```
 
 
-## Extract with xpath
+# Extract with xpath
 
 ```{r}
 doc %>% 
@@ -383,7 +437,7 @@ doc %>%
 ```
 
 
-## Extract name of tag
+# Extract name of tag
 
 ```{r}
 node = doc %>% 
@@ -393,7 +447,7 @@ node
 ```
 
 
-## Extract link
+# Extract link
 
 ```{r}
 link = doc %>% 
@@ -403,7 +457,7 @@ link
 ```
 
 
-## Extract table
+# Extract table
 
 ```{r}
 students = doc %>% 
@@ -413,7 +467,7 @@ students
 ```
 
 
-## The secret of URL
+# The secret of URL
 
 ```
 URL?val1=val1&val2=val2
@@ -427,7 +481,7 @@ URL?val1=val1&val2=val2
 write a crawler
 
 
-## Url Encoding in R
+# Url Encoding in R
 
 ```{r}
 URLencode(" ")
@@ -707,7 +761,7 @@ list.files(dest_dir)
 ```
 
 
-## writeBin
+# writeBin
 
 To write binary data to your local disk.
 
@@ -719,7 +773,7 @@ writeBin(bin, "resources/data/download/uv.json")
 ```
 
 
-## Database
+# Database
 
 - RSQLite: A light-weight database engine interface in R   
     - [PChome Example](example/pchome.html)
@@ -730,7 +784,7 @@ writeBin(bin, "resources/data/download/uv.json")
     - ...
 
 
-## Case study
+# Case study
 
 - [東森房屋](example/etwarm.html)
 - [Guestbook](example/guestbook.html)
@@ -744,7 +798,7 @@ writeBin(bin, "resources/data/download/uv.json")
 - [中央氣象局觀測資料查詢系統](example/cwb.html)
 
 
-## References
+# References
 
 - [rvest](https://github.com/hadley/rvest)
 - [httr](https://cran.r-project.org/web/packages/httr/index.html)
