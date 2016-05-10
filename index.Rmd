@@ -33,9 +33,7 @@ knitr::opts_chunk$set(warning = TRUE,
 <p class="white">
 `r Sys.Date()`<br/>
 <p style='color:white'>
-  Leo Lu  
-  [Github](https://github.com/leoluyi)  
-  [LinkedIn](https://tw.linkedin.com/in/leoluyi)
+  [Leo Lu](https://tw.linkedin.com/in/leoluyi)
 </p>
 </p>
 
@@ -196,9 +194,8 @@ These data structures can be mapped into a table according to:
 
 # (Atomic) Vector
 
-Vector is a basic data structure in R. 
-Atomic vectors are linear vectors of a single primitive type.
-A scalar is a vector of length 1.
+- (Atomic) vector is a basic data structure in R. 
+- They are linear vectors of a single primitive type. A scalar is a vector of length 1.
 
 
 ```{r, collapse=TRUE}
@@ -214,7 +211,7 @@ length(s1)
 
 # List
 
-Lists are also vectors, but not _atomic vectors_. Lists are generic vectors, with (naturally) different semantics.
+Lists are also vectors, but not ___atomic vectors___. Lists are ___generic vectors___, with (naturally) different semantics.
 
 Elements in a list can be any kinds type and its length is arbitrary.
 Function `str` can help you investigate the structure of a nested list.
@@ -344,7 +341,8 @@ m
 
 # tryCache
 
-tryCache let you deal with error handling in R.
+- tryCache let you deal with error handling in R.
+- It is IMPORTANT when wrapping your crawler into a function because you don't want your function fail without any outcome.
 
 ```{r, eval=FALSE}
 tryCatch({
@@ -363,6 +361,10 @@ tryCatch({
 
 <img src="https://github.com/smbache/magrittr/raw/master/inst/logo.png" alt="magrittr logo" style="max-width:100%;" />
 
+# magrittr
+
+<img src="resources/img/magrittr_pipe.png" alt="" style="max-width:70%;" />
+
 Pipe argument to right-hand side with `%>%`
 
 ```
@@ -374,17 +376,22 @@ Pipe argument to right-hand side with `%>%`
 ```
 
 ---
+
 ## Workflow of Crawler Design {.shout}
+
 ---
 
-1. 找到資料頁，想像資料要長什麼樣子
-2. 找到資料所在的request/response
-3. 一層層往上解析
 
+# Architecture of Crawlers
 
-- 儘量把資料撈完整，才足夠轉換成資訊。
-- 先設想產出的資料格式(schema)，觀察網頁內容，才知道database table如何設計。
-- 先到要搜尋資料的詳細資料頁，解析資料，再一層層往上解析，套上判斷式及迴圈, 完成爬蟲的自動化。
+<img class="cover" src="resources/img/crawler_process.png" width=840px>
+
+# Workflow
+
+1. 找到資料頁，想像資料要長什麼樣子，設想產出的資料格式(schema)
+2. 觀察網頁內容，找到資料所在的request/response，再一層層往上解析，套上判斷式及迴圈, 完成爬蟲的自動化。
+3. 解析取得的資料。
+
 
 
 # Crawler's toolkits in R
@@ -395,9 +402,12 @@ Pipe argument to right-hand side with `%>%`
 - [xml2](https://cran.r-project.org/web/packages/xml2/index.html): xml parser based on libxml2
 - [RCurl](https://cran.r-project.org/web/packages/RCurl/index.html): a wrapper of libcurl
 
-
 ---
-## Web Connector with R {.shout}
+
+# <br/><br/>Web Connector in R {.white}
+
+<img src="resources/img/reptile.jpg" class="cover">
+
 ---
 
 # HTTP request
@@ -424,6 +434,7 @@ A valid HTTP request includes four things:
     - socketConnection
     - `make.socket` / `read.socket` / `close.socket`
 
+
 # Connection: GET Method
 
 Use `GET()` to request data from a specific resource
@@ -439,8 +450,8 @@ res <- GET(
   add_headers(a = 1, b = 2),
   set_cookies(c = 1, d = 2)
 )
-res_text <- content(res, as = "text", encoding = "UTF-8")
-doc <- read_html(res_text, encoding = "UTF-8")
+content(res, as = "text", encoding = "UTF-8")
+content(res, as = "parsed", encoding = "UTF-8")
 ```
 
 
@@ -467,6 +478,7 @@ doc %>%
     html_nodes(xpath = '//*[@id="action-bar-container"]/div/div[2]/a[2]') %>% 
     html_attr("href")
 ```
+
 
 # httr
 
@@ -499,8 +511,62 @@ headers(res)
 res_text <- content(res, type = "text", encoding = "UTF-8")
 ```
 
-<br/>
-## The response
+
+# Connection: POST method
+
+- Submits data to be processed to a specified resource
+- The query string (name/value pairs) is sent in the HTTP message body
+
+## 起手式
+
+```{r, eval=FALSE}
+## Not Run
+library(httr)
+library(rvest)
+
+(res1 <- POST(url = "http://httpbin.org/post", 
+              body = "A simple text string"))
+res2 <- POST(url = "http://httpbin.org/post",
+             body = list(x = "A simple text string", 
+                         y = "Another string"))
+
+content(res2, as = "text", encoding = "UTF-8")
+content(res2, as = "parsed", encoding = "UTF-8")
+```
+
+
+
+# 一個例子學會第二隻爬蟲: Guestbook
+
+[Guestbook](resources/example/guestbook.html)
+
+<img src="resources/img/postGuestBook.png" width="800">
+
+
+# Exercise: Guestbook
+
+Try to post a message in 
+[App Engine GuestBook](http://apt-bonbon-93413.appspot.com/)
+
+
+# Set header
+
+Sometime you may need to provide appropriate 
+[HTTP header fields](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields)
+with `add_headers()` to make a request.
+
+- [Starbucks](resources/example/starbucks.html)
+
+<img src="resources/img/starbucks.png" width="800">
+
+
+# Cookies
+
+- A small piece of data sent from a website and stored in the user's web browser while the user is browsing it
+- Someetimes you may need set cookies with `set_cookies` to retreve a request.
+
+
+# The response
 
 ### The status code
 ```{r, collapse=TRUE}
@@ -545,6 +611,20 @@ content(res, "parsed")
 
 ---
 
+# The secret of URL
+
+```
+URL?val1=val1&val2=val2
+```
+
+- The query string is sent in the URL of a
+[GET](http://www.w3schools.com/tags/ref_httpmethods.asp) request
+- Non-ASCII character and some preserved characters need to be encoded with 
+[URL Encode](http://www.w3schools.com/tags/ref_urlencode.asp)
+- In most situation, you may need to manipulate the query string when you 
+write a crawler
+
+
 # Query String
 
 You can assign query parameter with `query()` 
@@ -561,6 +641,64 @@ identical(res1$content, res2$content)
 ```
 
 
+
+# Url Encoding in R
+
+```{r}
+URLencode(" ")
+greeting = "你好嗎我很好"
+greeting_enc = URLencode(greeting)
+greeting_enc
+URLdecode(greeting_enc)
+```
+
+
+# Concatenate strings / String formatting
+
+```{r}
+paste0("hihi", greeting)
+paste0("hihi", greeting, 1:3)
+paste("hihi", greeting, 1:3, sep = " ", collapse = ",")
+sprintf("%s,%s嗎?", "hihi", greeting)
+```
+
+
+# Use string template
+
+```{r}
+library(whisker)
+
+url_template = paste0("http://ecshweb.pchome.com.tw/search/v3.3/all/results?",
+                      "q={{q}}&page={{page}}&sort={{sort}}", collapse = "")
+url3 = whisker.render(url_template, list(q="sony", page="1", sort="rnk/dc"))
+url3
+res3 = GET(url3)
+identical(res$content, res3$content)
+```
+
+
+---
+
+# <br/><br/>Parsing Data {.white}
+
+<img src="resources/img/reptile.jpg" class="cover">
+
+---
+
+# What to Parse
+
+### 結構化資料
++ json, jsonp: PChome, 紫外線即時監測資料 (`jsonlite`)
++ html table: 公開資訊觀測站 (`rvest::html_table`, `XML::readHtmlTable`)
++ xml: 7-11 (`XML::xmlToDataFrame`)
+
+### 非結構化資料
++ RegEx: 7-11 的 citycode (areacode.js)
+
+
+# Example: PChome
+
+[PChome](resources/example/pchome.html)
 
 
 # rvest
@@ -579,6 +717,20 @@ A web scraper designed to work with magrittr.
     - `html_table`: parse tables into data frames 
 
 
+# Use with rvest
+
+- Parse data with appropriate encoding
+- Bware of System Encoding
+- Use `iconv()`, `Encoding<-` and `Sys.setlocale()` in Windows
+- Example: [Yahoo Stock](resources/example/yahoo_stock.html)
+
+
+# Useful R functions to combine list of dataframes
+
+- `do.call` + `rbind`
+- `data.table::rbindlist`
+
+
 # A simple HTML document
 
 [demo](resources/data/demo.html)
@@ -591,18 +743,21 @@ cat(doc)
 ```
 
 
-# Create HTML document 
+# Create HTML document object
 
 ```{r}
 library(rvest)
-doc = read_html("resources/data/demo.html")
+doc <- read_html("resources/data/demo.html")
 doc
 class(doc)
 ```
 
 # Extract elements from HTML document
 
-## Extract with css
+<img src="resources/img/html_tree.png" width=640>
+
+
+# Extract with css
 
 CSS practice
 http://flukeout.github.io/
@@ -649,75 +804,58 @@ link
 ```
 
 
+# Example: PTT
+
+use package `xmlview` to parse XML content and extract elements.
+
+- [PTT](resources/example/ptt_xmlview.html)
+
+
 # Extract table
 
+(`rvest::html_table` is temperarily not working with unicode data.)
+
 ```{r}
-students = doc %>% 
+students <- read_html("resources/data/demo.html") %>% 
     html_nodes(xpath = "//table") %>%
     html_table()
 students
 ```
 
+# Extract table
 
-# The secret of URL
-
-```
-URL?val1=val1&val2=val2
-```
-
-- The query string is sent in the URL of a
-[GET](http://www.w3schools.com/tags/ref_httpmethods.asp) request
-- Non-ASCII character and some preserved characters need to be encoded with 
-[URL Encode](http://www.w3schools.com/tags/ref_urlencode.asp)
-- In most situation, you may need to manipulate the query string when you 
-write a crawler
-
-
-# Url Encoding in R
+## use `XML::readHTMLTable()`
 
 ```{r}
-URLencode(" ")
-greeting = "你好嗎我很好"
-greeting_enc = URLencode(greeting)
-greeting_enc
-URLdecode(greeting_enc)
+res_text <- GET("https://zh.wikipedia.org/wiki/%E5%9B%BD%E5%AE%B6%E4%BA%BA%E5%8F%A3%E5%88%97%E8%A1%A8") %>% 
+  content("text", encoding = "UTF-8") %>% 
+  `Encoding<-`("UTF-8")
+
+# create `HTMLInternalDocument` for following use
+doc <- XML::htmlParse(res_text, encoding = "UTF-8")
+class(doc)
+
+# Parse tables with XML::readHTMLTable()
+tables <- XML::readHTMLTable(doc)
+
+# str(tables) # take a look 
+# View(tables[[2]]) # take a look 
+knitr::kable(tables[[2]])
 ```
 
+# Example: 公開資訊觀測站
 
-# Concatenate strings / String formatting
-
-```{r}
-paste0("hihi", greeting)
-paste0("hihi", greeting, 1:3)
-paste("hihi", greeting, 1:3, sep = " ", collapse = ",")
-sprintf("%s,%s嗎?", "hihi", greeting)
-```
+- [公開資訊觀測站](resources/example/mops.html)
 
 
-# Case study: 東森房屋
+# Parse XML
 
-- [東森房屋](resources/example/etwarm.html)
+Parse XML table with `XML::xmlToDataFrame()`
 
+## Example
+- [Seven Eleven](resources/example/seven_eleven.html)
 
-# Exercise
-
-Try to get some houses's information in 台北縣.
-
-
-
-
-# Use string template
-
-```{r}
-library(whisker)
-
-url_template = paste0("http://ecshweb.pchome.com.tw/search/v3.3/all/results?",
-                      "q={{q}}&page={{page}}&sort={{sort}}", collapse = "")
-url3 = whisker.render(url_template, list(q="sony", page="1", sort="rnk/dc"))
-url3
-res3 = GET(url3)
-identical(res$content, res3$content)
-```
+- RegEx: 7-11 citycode (areacode.js)
 
 
 # Parse JSON format
@@ -754,7 +892,6 @@ identical(res_df, res_df2)
 
 # Parse with do.call
 
-
 ```{r}
 res_df3 = data.frame(do.call(rbind, res_list$prods))
 identical(res_df, res_df3)
@@ -763,79 +900,42 @@ identical(res_df, res_df3)
 str(res_df3)
 ```
 
+---
 
-# Use with rvest
+# Exercise: 東森房屋
 
-- Parse data with appropriate encoding
-- Bware of System Encoding
-- Use `iconv()` and `Sys.setlocale()` in Windows
-- Example: [Yahoo Stock](resources/example/yahoo_stock.html)
+- [東森房屋](resources/example/etwarm.html)
+- 試著找到「新北市」的資料
 
 
-# Exercise
+---
+
+# Exercise: 紫外線即時監測資料
 
 [行政院環境保護署環境資源資料開放平台](http://opendata.epa.gov.tw/DevelopZone/Sample/UV/)提供了一系列的RESTful Api供大家取用，請試著把
 [紫外線即時監測資料](http://opendata.epa.gov.tw/webapi/api/rest/datastore/355000000I-000004/?format=json)的資料取回來並轉成data.frame
 
 
-## Answer
+# Answer
 
 [紫外線即時監測資料](resources/example/uv.html)
 
 
-## Cookies
+---
 
-- A small piece of data sent from a website and stored in the user's web browser while the user is browsing it
-- Someetimes you may need set cookies with `set_cookies` to retreve a request.
-    - [PTT Gossiping](resources/example/ptt_gossiping.html)
+# <br/><br/>Save your data {.white}
 
-
-## POST
-
-- Submits data to be processed to a specified resource
-- The query string (name/value pairs) is sent in the HTTP message body
-
-
-## Example: Guestbook
-
-[Guestbook](resources/example/guestbook.html)
-
-<img src="resources/img/postGuestBook.png" width="1000">
-
-
-## Exercise: Guestbook
-
-Try to post a message in 
-[App Engine GuestBook](http://apt-bonbon-93413.appspot.com/)
-
-
-## Set header
-
-Sometime you may need to provide appropriate 
-[HTTP header fields](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields)
-with `add_headers()` to make a request.
-
-- [Starbucks](resources/example/starbucks.html)
-
-<img src="resources/img/starbucks.png" width="1000">
-
-
-## XML
-
-Parse XML table with `XML::xmlToDataFrame()`
-
-- [Seven Eleven](resources/example/seven_eleven.html)
+<img src="resources/img/reptile.jpg" class="cover">
 
 ---
-## Save your data {.shout}
----
+
 
 # Save your data
 
-- write.csv: write data.frame as csv file
-- download.file: save html, jpeg, etc
-- writeBin: write binary object into disk
-- RSQLite: SQLite connector in R
+- `write.csv`: write data.frame as csv file
+- `download.file`: save html, jpeg, etc
+- `writeBin`: write binary object into disk
+- `RSQLite`: SQLite connector in R
 
 
 # write.csv
@@ -852,7 +952,7 @@ write.csv(res_df, "resources/data/pchome.csv", row.names = FALSE)
 ```
 
 
-## download.file
+# download.file
 
 To download a file from the Internet.
 download.file takes advantage of internet utilities such as
