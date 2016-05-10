@@ -91,7 +91,7 @@ knitr::opts_chunk$set(warning = TRUE,
 
 ```{r, eval=FALSE}
 ## === install required packages ===
-pkg_list <- c("magrittr", "httr", "rvest", "stringr", "data.table")
+pkg_list <- c("magrittr", "httr", "rvest", "stringr", "data.table", "jsonlite", "RSQLite")
 pkg_new <- pkg_list[!(pkg_list %in% installed.packages()[,"Package"])]
 if(length(pkg_new)) install.packages(pkg_new)
 rm(pkg_new, pkg_list)
