@@ -722,7 +722,7 @@ A web scraper designed to work with magrittr.
 - Parse data with appropriate encoding
 - Bware of System Encoding
 - Use `iconv()`, `Encoding<-` and `Sys.setlocale()` in Windows
-- Example: [Yahoo Stock](resources/example/yahoo_stock.html)
+
 
 
 # Useful R functions to combine list of dataframes
@@ -843,8 +843,10 @@ tables <- XML::readHTMLTable(doc)
 knitr::kable(tables[[2]])
 ```
 
-# Example: 公開資訊觀測站
+# Example: Yahoo Stock - (待改寫)
+- [Yahoo Stock](resources/example/yahoo_stock.html)
 
+# Example: 公開資訊觀測站
 - [公開資訊觀測站](resources/example/mops.html)
 
 
