@@ -720,7 +720,7 @@ A web scraper designed to work with magrittr.
 # Use with rvest
 
 - Parse data with appropriate encoding
-- Bware of System Encoding
+- Beware of System Encoding
 - Use `iconv()`, `Encoding<-` and `Sys.setlocale()` in Windows
 
 
