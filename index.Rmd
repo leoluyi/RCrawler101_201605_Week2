@@ -37,6 +37,12 @@ knitr::opts_chunk$set(warning = TRUE,
 </p>
 </p>
 
+# How to use this slides
+
+- Press **Esc** to navigation mode
+- Press **pageDown**, **Right** or **Down** to go to next slide
+- Presss **PageUP**, **Left** or **Up** to go to previous slide
+
 # Outline
 
 + Recap for observation skills (10 min)
@@ -134,7 +140,7 @@ rm(pkg_new, pkg_list)
 - Working Environment
 - Basic Data Structure
 - Function
-- if/else, for, tryCache
+- if/else, for, tryCatch
 - [magrittr](https://github.com/smbache/magrittr)
 - [data.table](https://cran.r-project.org/web/packages/data.table/index.html)
 
@@ -214,7 +220,8 @@ length(s1)
 Lists are also vectors, but not ___atomic vectors___. Lists are ___generic vectors___, with (naturally) different semantics.
 
 Elements in a list can be any kinds type and its length is arbitrary.
-Function `str` can help you investigate the structure of a nested list.
+
+> Function `str` can help you investigate the structure of a nested list.
 
 
 ```{r}
@@ -229,6 +236,48 @@ li2 <- list(li = li,
             c = matrix(1:4, nrow = 2))
 str(li2)
 ```
+
+# Visualising lists
+
+```{r}
+x1 <- list(c(1, 2), c(3, 4))
+x2 <- list(list(1, 2), list(3, 4))
+x3 <- list(1, list(2, list(3)))
+```
+
+<img src="resources/img/lists-structure.png" alt="" style="max-width:70%;" />
+
+# Lists Subsetting
+
+<img src="resources/img/lists-subsetting.png" alt="" style="max-width:70%;" />
+
+```{r}
+a <- list(a = 1:3, b = "a string", c = pi, d = list(-1, -5))
+```
+
+- `[` extracts a sub-list. The result will always be a list.
+```{r, eval=FALSE}
+str(a[1:2])
+str(a[4])
+```
+
+- `[[` extracts a single component from a list. It removes a level of hierarchy from the list.
+```{r, eval=FALSE}
+y <- list("a", 1L, 1.5, TRUE)
+str(y[[1]])
+str(y[[4]])
+```
+
+- `$` is a shorthand for extracting named elements of a list. It works similarly to `[[` except that you don’t need to use quotes.
+```{r, eval=FALSE}
+a$a
+a[["b"]]
+```
+
+# Lists Subsetting (Pepper Shaker)
+
+<img src="resources/img/lists-pepper.png" alt="" style="max-width:70%;" />
+
 
 
 # Data Frame
@@ -271,10 +320,10 @@ knitr::kable(x)
 
 To understand computations in R, two slogans are helpful:  
 
-> Everything that exists is an object.  
-> Everything that happens is a function call.  
-
-**John Chambers**
+> + Everything that exists is an object.  
+> + Everything that happens is a function call.  
+> 
+> **John Chambers**
 
 <br/>
 
@@ -302,6 +351,7 @@ f <- function(arg1, arg2, ...) {
 - Call by value by default  
     send a copy of a object into a function and the input object won't change after execution without assignment
 
+# Control Flow {.shout}
 
 # If
 
@@ -339,23 +389,42 @@ m
 ```
 
 
-# tryCache
+# tryCatch
 
-- tryCache let you deal with error handling in R.
-- It is IMPORTANT when wrapping your crawler into a function because you don't want your function fail without any outcome.
+- tryCatch let you deal with error handling in R.
+- It is __IMPORTANT__ when wrapping your crawler into a function because you don't want your function fail without any outcome.
 
 ```{r, eval=FALSE}
 tryCatch({
-    result <- expr
+  result <- expr
+  # If you want to use more than one 
+  # R expression in the "try" part then you'll have to 
+  # use curly brackets.
+  # 'tryCatch()' will return the last evaluated expression 
+  # in case the "try" part was completed successfully
 }, warning = function(w) {
-    # warning handling 
+  message("Here's the original warning message:")
+  message(w)
+  # Choose a return value in case of warning
+  return(NULL)
 }, error = function(e) {
-    # error handling 
+  message("Here's the original error message:")
+  message(e)
+  # Choose a return value in case of error
+  return(NA)
+},
 }, finally {
-    # finally
+  message("Some other message at the end")
+  # finally:
+  # Here goes everything that should be executed at the end,
+  # regardless of success or error.
+  # If you want more than one expression to be executed, then you 
+  # need to wrap them in curly brackets ({...}); otherwise you could
+  # just have written 'finally=<expression>' 
 })
 ```
 
+https://stackoverflow.com/questions/12193779/how-to-write-trycatch-in-r/12195574#12195574
 
 # magrittr
 
@@ -382,7 +451,7 @@ Pipe argument to right-hand side with `%>%`
 ---
 
 
-# Architecture of Crawlers
+## Architecture of Crawlers
 
 <img class="cover" src="resources/img/crawler_process.png" width=840px>
 
@@ -493,6 +562,12 @@ doc %>%
         - as = "raw": return binary
     - `set_cookies()`: set cookles
     - `add_headers()`: add additional headers to a request.
+
+# Parsing Response Content
+
+<div align="center">
+<img src="resources/img/httr-parsing.png" width=800px>
+</div>
 
 # httr basics
 
@@ -688,9 +763,10 @@ identical(res$content, res3$content)
 # What to Parse
 
 ### 結構化資料
-+ json, jsonp: PChome, 紫外線即時監測資料 (`jsonlite`)
++ html elements: (`rvest::html_node`)
++ json, jsonp: PChome, 紫外線即時監測資料 (`jsonlite::fromJSON`)
 + html table: 公開資訊觀測站 (`rvest::html_table`, `XML::readHtmlTable`)
-+ xml: 7-11 (`XML::xmlToDataFrame`)
++ xml table: 7-11 (`XML::xmlToDataFrame`)
 
 ### 非結構化資料
 + RegEx: 7-11 的 citycode (areacode.js)
@@ -850,13 +926,12 @@ knitr::kable(tables[[2]])
 - [公開資訊觀測站](resources/example/mops.html)
 
 
-# Parse XML
+# Parse XML table
 
 Parse XML table with `XML::xmlToDataFrame()`
 
 ## Example
 - [Seven Eleven](resources/example/seven_eleven.html)
-
 - RegEx: 7-11 citycode (areacode.js)
 
 
