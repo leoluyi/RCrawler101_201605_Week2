@@ -690,13 +690,14 @@ stop_for_status(res)
 
 + text
 ```{r, collapse=TRUE}
-res <- GET("http://httpbin.org/get")
-content(res, "text", encoding = "UTF-8")  # accesses the body as a character vector
+res <- GET("https://www.ptt.cc/bbs/NBA/M.1463302851.A.8D7.html")
+content(res, "text", encoding = "UTF-8") %>%  # accesses the body as a character vector
+  `Encoding<-`("UTF-8")
 ```
 
 + binary
 ```{r, collapse=TRUE}
-(bin <- content(res, "raw"))  # raw (binary) vector
+(bin <- content(res, "raw")) %>% head(200) # raw (binary) vector
 # writeBin(bin, "myfile.txt") # the highest fidelity way of saving files to disk
 ```
 
@@ -706,7 +707,6 @@ html_document, csv, json, jpeg, png. See `?httr::content`
 ```{r, collapse=TRUE}
 content(res, "parsed")
 ```
-
 
 
 ---
