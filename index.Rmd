@@ -997,6 +997,10 @@ class(doc)
 # Parse tables with XML::readHTMLTable()
 tables <- XML::readHTMLTable(doc)
 
+# Or you can read table from a html string
+tables2 <- res_text %>% XML::readHTMLTable()
+identical(tables, tables2)
+
 # str(tables) # take a look 
 # View(tables[[2]]) # take a look 
 ```
