@@ -1032,7 +1032,7 @@ Parse XML table with `XML::xmlToDataFrame()`
 
 Yun can parse 
 [JSON](http://www.w3schools.com/json/)
-with jsonlite in R
+with `jsonlite` in R
 
 ```{r}
 library(jsonlite)
@@ -1203,7 +1203,7 @@ writeBin(bin, "resources/data/download/uv.json")
 - [PTT Gossiping](resources/example/ptt_gossiping.html)
 - [Starbucks](resources/example/starbucks.html)
 - [Seven Eleven](resources/example/seven_eleven.html)
-- [FamilyMart](resources/example/family_mart.html) # jsonp 待補
+- [FamilyMart](resources/example/family_mart.html) # json
 - [PChome](resources/example/pchome.html)
 - [公開資訊觀測站](resources/example/mops.html)
 - [中央氣象局觀測資料查詢系統](resources/example/cwb.html)
