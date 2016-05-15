@@ -684,6 +684,10 @@ stop_for_status(res)
 
 3 ways to access the body of the request:
 
+<div align="center">
+<img src="resources/img/httr-content-type.png" width=800px>
+</div>
+
 + text
 ```{r, collapse=TRUE}
 res <- GET("http://httpbin.org/get")
