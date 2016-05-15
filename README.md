@@ -9,7 +9,7 @@ This material is modified from mansunkuo's work by leoluyi. All
 
 ## Environment
 
-[R Installation Guide](http://leoluyi.github.io/RCrawler101_201605_Week2/install_R.html)
+- [R Installation Guide](http://leoluyi.github.io/RCrawler101_201605_Week2/install_R.html)
 
 
 ## How to use this slides

@@ -47,7 +47,7 @@ knitr::opts_chunk$set(warning = TRUE,
 
 + Recap for observation skills (10 min)
 + R Basic (quick recap) and RStudio IDE (10 min)
-+ Connection
++ Connection (20 min)
     - Crawler’s toolkits in R
 + Parsing Data (50 min)
     + XPath & CSS
@@ -65,6 +65,7 @@ knitr::opts_chunk$set(warning = TRUE,
 + [EditThisCookie](https://chrome.google.com/webstore/detail/editthiscookie/fngmhnnpilhplaeedifhccceomclgfbg?hl=zh-TW)
 + [XPath Helper](https://chrome.google.com/webstore/detail/xpath-helper/hgimnogjllphhhkhlmebbmlgjoejdpjl?hl=zh-TW)
 + [JSON Viewer](https://chrome.google.com/webstore/detail/json-viewer/gbmdgpbipfallnflgajpaliibnhdgobh)
++ [Advanced REST client](https://chrome.google.com/webstore/detail/advanced-rest-client/hgmloofddffdnphfgcellkdfbfbjeloo?utm_source=chrome-ntp-icon)
 
 
 # Recap Observation Skills and HTTP request for Connection
@@ -91,11 +92,12 @@ knitr::opts_chunk$set(warning = TRUE,
 
 # Install Packages
 
-## (if you haven't those packages yet)
+## (if you haven't installed those packages yet)
 
 ```{r, eval=FALSE}
 ## === install required packages ===
-pkg_list <- c("magrittr", "httr", "rvest", "stringr", "data.table", "jsonlite", "RSQLite")
+pkg_list <- c("magrittr", "httr", "rvest", "stringr", "data.table",
+              "jsonlite", "RSQLite")
 pkg_new <- pkg_list[!(pkg_list %in% installed.packages()[,"Package"])]
 if(length(pkg_new)) install.packages(pkg_new)
 rm(pkg_new, pkg_list)
@@ -279,7 +281,6 @@ a[["b"]]
 <img src="resources/img/lists-pepper.png" alt="" style="max-width:70%;" />
 
 
-
 # Data Frame
 
 Data frame is a 2-dimension data structure to deal with a table-like heterogeneous data.
@@ -340,7 +341,7 @@ To understand computations in R, two slogans are helpful:
 A typical function in R may look like:
 
 ```{r}
-f <- function(arg1, arg2, ...) {
+f <- function(par1, par2, ...) {
     # Some magic happened
     return(sth)    # return something
 }
@@ -430,18 +431,29 @@ https://stackoverflow.com/questions/12193779/how-to-write-trycatch-in-r/12195574
 
 <img src="https://github.com/smbache/magrittr/raw/master/inst/logo.png" alt="magrittr logo" style="max-width:100%;" />
 
-# magrittr
+# What is magrittr
 
 <img src="resources/img/magrittr_pipe.png" alt="" style="max-width:70%;" />
 
 Pipe argument to right-hand side with `%>%`
 
+- `x %>% f` is equivalent to `f(x)`
+- `x %>% f(y)` is equivalent to `f(x, y)`
+- `x %>% f %>% g %>% h` is equivalent to `h(g(f(x)))`
+- `x %>% f(y, .)` is equivalent to `f(y, x)`
+- `x %>% f(y, z = .)` is equivalent to `f(y, z = x)`
+
+<br/>
+
+## Example
+```{r, eval=FALSE}
+library(magrittr)
+iris %>% head()
 ```
-- x %>% f is equivalent to f(x)
-- x %>% f(y) is equivalent to f(x, y)
-- x %>% f %>% g %>% h is equivalent to h(g(f(x)))
-- x %>% f(y, .) is equivalent to f(y, x)
-- x %>% f(y, z = .) is equivalent to f(y, z = x)
+
+- Using the dot place-holder
+```{r, eval=FALSE}
+"Ceci n'est pas une pipe" %>% gsub("une", "un", .)
 ```
 
 ---
@@ -496,8 +508,8 @@ A valid HTTP request includes four things:
 
 
 # Web Connector in R
-- `httr`
-- `RCurl`
+- `{httr}`
+- `{RCurl}`
 - `download.file()`
 - Socket Connection Tools:
     - socketConnection
@@ -517,7 +529,8 @@ library(rvest)
 res <- GET(
   url = "http://httpbin.org/get",
   add_headers(a = 1, b = 2),
-  set_cookies(c = 1, d = 2)
+  set_cookies(c = 1, d = 2),
+  query = list(q="hihi")
 )
 content(res, as = "text", encoding = "UTF-8")
 content(res, as = "parsed", encoding = "UTF-8")
@@ -555,13 +568,14 @@ doc %>%
     - HTTP verbs: `GET()`, `POST()`, `HEAD()`... 
     - `http_status`: Translate http status code
        [HTTP status](https://zh.wikipedia.org/wiki/HTTP%E7%8A%B6%E6%80%81%E7%A0%81) code
+    - `set_cookies()`: set cookles
+    - `add_headers()`: add additional headers to a request.
     - `headers()`: Access response headers
     - `content()`: Retrieve the contents of a request
         - as = "parsed": detect content type automatically and parse the result
         - as = "text": return character
         - as = "raw": return binary
-    - `set_cookies()`: set cookles
-    - `add_headers()`: add additional headers to a request.
+
 
 # Parsing Response Content
 
@@ -571,57 +585,21 @@ doc %>%
 
 # httr basics
 
-```{r, collapse=TRUE}
+```{r, collapse=TRUE, eval=FALSE}
 library(httr)
 res <- GET(
   url = "http://httpbin.org/get",
   add_headers(a = 1, b = 2),
-  set_cookies(c = 1, d = 2)
+  set_cookies(c = 1, d = 2),
+  query = list(q="hihi")
 )
 
 status_code(res)
 
 headers(res)
 
-res_text <- content(res, type = "text", encoding = "UTF-8")
+content(res, type = "text", encoding = "UTF-8")
 ```
-
-
-# Connection: POST method
-
-- Submits data to be processed to a specified resource
-- The query string (name/value pairs) is sent in the HTTP message body
-
-## 起手式
-
-```{r, eval=FALSE}
-## Not Run
-library(httr)
-library(rvest)
-
-(res1 <- POST(url = "http://httpbin.org/post", 
-              body = "A simple text string"))
-res2 <- POST(url = "http://httpbin.org/post",
-             body = list(x = "A simple text string", 
-                         y = "Another string"))
-
-content(res2, as = "text", encoding = "UTF-8")
-content(res2, as = "parsed", encoding = "UTF-8")
-```
-
-
-
-# 一個例子學會第二隻爬蟲: Guestbook
-
-[Guestbook](resources/example/guestbook.html)
-
-<img src="resources/img/postGuestBook.png" width="800">
-
-
-# Exercise: Guestbook
-
-Try to post a message in 
-[App Engine GuestBook](http://apt-bonbon-93413.appspot.com/)
 
 
 # Set header
@@ -641,9 +619,52 @@ with `add_headers()` to make a request.
 - Someetimes you may need set cookies with `set_cookies` to retreve a request.
 
 
-# The response
+# Connection: POST method
 
-### The status code
+- Submits data to be processed to a specified resource
+- The query string (name/value pairs) is sent in the HTTP message body
+
+## 起手式
+
+```{r, eval=FALSE}
+## Not Run
+library(httr)
+library(rvest)
+
+
+res1 <- POST(url = "http://httpbin.org/post", 
+              add_headers(a = 1, b = 2),
+              set_cookies(c = 1, d = 2),
+              body = "A simple text string")
+
+res2 <- POST(url = "http://httpbin.org/post",
+             add_headers(a = 1, b = 2),
+             set_cookies(c = 1, d = 2),
+             body = list(x = "A simple text string", 
+                         y = "hihi"))
+
+identical(res1, res2)
+content(res2, as = "text", encoding = "UTF-8")
+content(res2, as = "parsed", encoding = "UTF-8")
+```
+
+
+# 一個例子學會第二隻爬蟲: Guestbook
+
+[Guestbook](resources/example/guestbook.html)
+
+<img src="resources/img/postGuestBook.png" width="800">
+
+
+# Exercise: Guestbook
+
+Try to post a message in 
+[App Engine GuestBook](http://apt-bonbon-93413.appspot.com/)
+
+
+
+# The response status code
+
 ```{r, collapse=TRUE}
 res <- GET("http://httpbin.org/get")
 
@@ -658,8 +679,8 @@ warn_for_status(res)
 stop_for_status(res)
 ```
 
-<br/>
-### THe Body
+
+# The response Body
 
 3 ways to access the body of the request:
 
@@ -689,7 +710,7 @@ content(res, "parsed")
 # The secret of URL
 
 ```
-URL?val1=val1&val2=val2
+URL?par1=val1&par2=val2
 ```
 
 - The query string is sent in the URL of a
@@ -738,18 +759,18 @@ sprintf("%s,%s嗎?", "hihi", greeting)
 ```
 
 
-# Use string template
+<!-- # Use string template -->
 
-```{r}
-library(whisker)
+<!-- ```{r} -->
+<!-- library(whisker) -->
 
-url_template = paste0("http://ecshweb.pchome.com.tw/search/v3.3/all/results?",
-                      "q={{q}}&page={{page}}&sort={{sort}}", collapse = "")
-url3 = whisker.render(url_template, list(q="sony", page="1", sort="rnk/dc"))
-url3
-res3 = GET(url3)
-identical(res$content, res3$content)
-```
+<!-- url_template = paste0("http://ecshweb.pchome.com.tw/search/v3.3/all/results?", -->
+<!--                       "q={{q}}&page={{page}}&sort={{sort}}", collapse = "") -->
+<!-- url3 = whisker.render(url_template, list(q="sony", page="1", sort="rnk/dc")) -->
+<!-- url3 -->
+<!-- res3 = GET(url3) -->
+<!-- identical(res$content, res3$content) -->
+<!-- ``` -->
 
 
 ---
@@ -760,6 +781,12 @@ identical(res$content, res3$content)
 
 ---
 
+# Parsing Response Content
+
+<div align="center">
+<img src="resources/img/httr-parsing.png" width=800px>
+</div>
+
 # What to Parse
 
 ### 結構化資料
@@ -769,12 +796,7 @@ identical(res$content, res3$content)
 + xml table: 7-11 (`XML::xmlToDataFrame`)
 
 ### 非結構化資料
-+ RegEx: 7-11 的 citycode (areacode.js)
-
-
-# Example: PChome
-
-[PChome](resources/example/pchome.html)
++ RegEx: 7-11 的 citycode (areacode.js)、東森房屋
 
 
 # rvest
@@ -793,27 +815,85 @@ A web scraper designed to work with magrittr.
     - `html_table`: parse tables into data frames 
 
 
+# Parsing Response Content: Text Type
+
+<div align="center">
+<img src="resources/img/httr-parsing.png" width=800px>
+</div>
+
 # Use with rvest
 
+- 起手式
+```{r, eval=FALSE}
+httr::GET(url) %>% httr::content(as="text") %>% rvest::read_html()
+```
+
+
+# Beware of System Encoding
+
 - Parse data with appropriate encoding
-- Beware of System Encoding
-- Use `iconv()`, `Encoding<-` and `Sys.setlocale()` in Windows
+- Use `Encoding()`, `iconv()` and `Sys.setlocale()` in Windows (non-UTF8 system).
+- `iconvlist()` shows all encodings availabe.
+
+# Encoding
+
+`?Encoding`
+`?iconv`
+
+```{r, eval=FALSE}
+## check out your system locale
+Sys.getlocale()
+#> [1] "en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8"
+aa <- "你好嗎"
+Encoding(aa)
+#> [1] "UTF-8"
+charToRaw(aa)
+#> [1] e4 bd a0 e5 a5 bd e5 97 8e
+
+(aa_big5 <- iconv(aa, from = "UTF-8", to = "Big5"))
+#> [1] "\xa7A\xa6n\xb6\xdc"
+Encoding(aa_big5)
+#> [1] "unknown"
+harToRaw(aa_big5)
+#> [1] a7 41 a6 6e b6 dc
+```
 
 
+```{r, eval=FALSE}
+# On Windows
+Sys.getlocale()
+aa <- "你好嗎"
+Encoding(aa)
+aa_utf8 <- iconv(aa, from = "Big5", to = "UTF-8")
+Encoding(aa)
+```
 
-# Useful R functions to combine list of dataframes
 
-- `do.call` + `rbind`
-- `data.table::rbindlist`
+# Extract elements from HTML document
+
+<img src="resources/img/html_tree.png" width=640>
+
+
+# Tree Structure of HTML (Document Object Model, DOM)
+
+```{html}
+<a href = "www.meetup.com/Taiwan-R">
+  Taiwan R User Group Website
+</a>
+```
+
+- nodename : `a`
+- attribute : `href` with value `"www.meetup.com/Taiwan-R"`
+- text: `Taiwan R User Group Website`
 
 
 # A simple HTML document
 
-[demo](resources/data/demo.html)
+<a target="_blank" href="http://leoluyi.github.io/RCrawler101_201605_Week2/resources/data/demo.html">demo_page<a>
 
 ```{r}
 library(magrittr)
-doc = readLines("resources/data/demo.html") %>%
+doc = readLines("http://leoluyi.github.io/RCrawler101_201605_Week2/resources/data/demo.html") %>%
     paste(collapse = "\n")
 cat(doc)
 ```
@@ -823,22 +903,20 @@ cat(doc)
 
 ```{r}
 library(rvest)
-doc <- read_html("resources/data/demo.html")
+doc <- read_html("http://leoluyi.github.io/RCrawler101_201605_Week2/resources/data/demo.html")
 doc
 class(doc)
 ```
 
-# Extract elements from HTML document
-
-<img src="resources/img/html_tree.png" width=640>
-
+---
 
 # Extract with css
 
-CSS practice
+CSS practice  
 http://flukeout.github.io/
 
 ```{r}
+doc <- read_html("http://leoluyi.github.io/RCrawler101_201605_Week2/resources/data/demo.html")
 doc %>% 
     html_nodes(css = ".character") %>% 
     html_text
@@ -851,6 +929,7 @@ doc %>%
 # Extract with xpath
 
 ```{r}
+doc <- read_html("http://leoluyi.github.io/RCrawler101_201605_Week2/resources/data/demo.html")
 doc %>% 
     html_nodes(xpath = "//*[@class='character']") %>% 
     html_text
@@ -892,7 +971,7 @@ use package `xmlview` to parse XML content and extract elements.
 (`rvest::html_table` is temperarily not working with unicode data.)
 
 ```{r}
-students <- read_html("resources/data/demo.html") %>% 
+students <- read_html("http://leoluyi.github.io/RCrawler101_201605_Week2/resources/data/demo.html") %>% 
     html_nodes(xpath = "//table") %>%
     html_table()
 students
@@ -916,6 +995,11 @@ tables <- XML::readHTMLTable(doc)
 
 # str(tables) # take a look 
 # View(tables[[2]]) # take a look 
+```
+
+
+- Result
+```{r, echo=FALSE}
 knitr::kable(tables[[2]])
 ```
 
@@ -952,24 +1036,33 @@ str(res_df)
 ```
 
 
-# Parse with loop
-
-```{r}
+```{r, eval=FALSE}
 res_list = content(res, as = "parsed")
 str(res_list$prods[[1]])
+```
+
+# Parse json with loop
+
+```{r, eval=FALSE}
 res_df2 = data.frame()
 for (i in 1:length(res_list$prods)) {
-    res_df2 = rbind(res_df2, 
-                    data.frame(res_list$prods[[i]], 
-                               stringsAsFactors = FALSE))
+  res_df2 = rbind(res_df2, 
+                  data.frame(res_list$prods[[i]], 
+                             stringsAsFactors = FALSE))
 }
 identical(res_df, res_df2)
 ```
 
 
-# Parse with do.call
+# Useful R functions to combine list of dataframes
 
-```{r}
+- `do.call` + `rbind`
+- `data.table::rbindlist`
+
+
+# Parse Parse list of data.frames with `do.call` + `rbind`
+
+```{r, eval=FALSE}
 res_df3 = data.frame(do.call(rbind, res_list$prods))
 identical(res_df, res_df3)
 
@@ -979,7 +1072,24 @@ str(res_df3)
 
 ---
 
-# Exercise: 東森房屋
+# 非結構化資料解析: Regular Expression
+
+Package: `stringr`
+- `str_replace()`, `str_replace_all()`
+- `str_extract()`, `str_extract_all()`
+
+```{r, collapse=TRUE}
+library(stringr)
+fruits <- c("one apple", "two pears", "three bananas")
+str_replace(fruits, "[aeiou]", "-")
+str_replace_all(fruits, "[aeiou]", "-")
+
+shopping_list <- c("apples x4", "bag of flour", "bag of sugar", "milk x2")
+str_extract(shopping_list, "[a-z]+")
+str_extract_all(shopping_list, "[a-z]+")
+```
+
+# Exercise : 東森房屋
 
 - [東森房屋](resources/example/etwarm.html)
 - 試著找到「新北市」的資料
@@ -1084,7 +1194,7 @@ writeBin(bin, "resources/data/download/uv.json")
 - [PTT Gossiping](resources/example/ptt_gossiping.html)
 - [Starbucks](resources/example/starbucks.html)
 - [Seven Eleven](resources/example/seven_eleven.html)
-- [FamilyMart](resources/example/family_mart.html) # 待補
+- [FamilyMart](resources/example/family_mart.html) # jsonp 待補
 - [PChome](resources/example/pchome.html)
 - [公開資訊觀測站](resources/example/mops.html)
 - [中央氣象局觀測資料查詢系統](resources/example/cwb.html)

@@ -37,8 +37,8 @@
 
 div.sourceCode {
     line-height: 1.6;
-    overflow-x: hidden;
-    // overflow-x: auto;
+    // overflow-x: hidden;
+    overflow-x: auto;
     border: 2px solid #ccc;
     border-radius: 4px;
     padding: 6px 5px 1px 5px;
