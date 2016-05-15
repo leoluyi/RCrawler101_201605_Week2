@@ -97,9 +97,10 @@ knitr::opts_chunk$set(warning = TRUE,
 ```{r, eval=FALSE}
 ## === install required packages ===
 pkg_list <- c("magrittr", "httr", "rvest", "stringr", "data.table",
-              "jsonlite", "RSQLite")
+              "jsonlite", "RSQLite", "devtools")
 pkg_new <- pkg_list[!(pkg_list %in% installed.packages()[,"Package"])]
 if(length(pkg_new)) install.packages(pkg_new)
+if("xmlview" %in% pkg_new) devtools::install_github("hrbrmstr/xmlview")
 rm(pkg_new, pkg_list)
 ```
 
@@ -1011,7 +1012,7 @@ identical(tables, tables2)
 knitr::kable(tables[[2]])
 ```
 
-# Example: Yahoo Stock - (待改寫)
+# Example: Yahoo Stock
 - [Yahoo Stock](resources/example/yahoo_stock.html)
 
 # Example: 公開資訊觀測站
