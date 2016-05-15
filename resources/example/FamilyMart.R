@@ -1,5 +1,5 @@
 #' ---
-#' title: "公開資訊觀測站(Market Observation Post System)"
+#' title: "全家FamilyMart (店舖查詢)"
 #' author: "Agilelearning, Mansun Kuo "
 #' date: "`r Sys.Date()`"
 #' output:
@@ -11,24 +11,32 @@
 # set root dir when rendering
 knitr::opts_knit$set(root.dir = '..')
 
-#' [PCHome](http://ecshweb.pchome.com.tw/search/v3.3/)
+#' [全家FamilyMart (店舖查詢)](http://www.family.com.tw/marketing/inquiry.aspx)
 
 
 library(httr)
 library(jsonlite)
 
 res <- GET("http://api.map.com.tw/net/familyShop.aspx",
-          query = list(
-            searchType = "ShopList",
-            city = "基隆市",
-            area = "仁愛區",
-            fun = "showStoreList"
-          ))
+           add_headers(
+             Referer="http://www.family.com.tw/marketing/inquiry.aspx"
+           ),
+           query = list(
+             searchType = "ShopList",
+             type = "",
+             city = "基隆市",
+             area = "仁愛區",
+             road = "",
+             fun = "showStoreList",
+             key = "6F30E8BF706D653965BDE302661D1241F8BE9EBC"
+           ))
 
-content(res,as="parsed")
+resStr <- content(res,as="text")
 
-sub("[^\\]]*$","",sub("^[^\\[]*","",resStr))
-jsonDataString = sub("[^\\]]*$","",sub("^[^\\[]*","",resStr))
+
+jsonDataString <- resStr %>%
+  sub("^[^\\[]*","",.) %>%
+  sub("[^\\]]*$","",.)
 
 jsonData = fromJSON(jsonDataString)
-View(data.frame(do.call(rbind,jsonData)))
+# View(data.frame(do.call(rbind,jsonData)))
