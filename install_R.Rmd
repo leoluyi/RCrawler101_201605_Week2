@@ -61,9 +61,13 @@ Download and install RStudio desktop.
 Open R console and execute following code:
 
 ```{r}
-pkg_list <- c("httr", "rvest", "DT", "rmarkdown", "XML", "whisker", "googleVis", "leaflet", "jsonlite", "magrittr", "data.table", "RSQLite", "knitr", "stringr")
+pkg_list <- c("httr", "rvest", "DT", "rmarkdown", "XML", "whisker",
+              "googleVis", "leaflet", "jsonlite", "magrittr", "data.table",
+              "RSQLite", "knitr", "stringr", "devtools", "xmlview")
 pkg_new <- pkg_list[!(pkg_list %in% installed.packages()[,"Package"])]
 if(length(pkg_new)) install.packages(pkg_new)
+if("xmlview" %in% pkg_new) devtools::install_github("hrbrmstr/xmlview")
 rm(pkg_new, pkg_list)
 ```
+
 
