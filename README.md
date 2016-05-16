@@ -2,7 +2,8 @@
 
 A tutorial of Crawler in R.
 
-This material is modified from mansunkuo's work by leoluyi. All 
+This material is modified from [Mansunkuo](http://mansunkuo.github.io/)
+'s work by leoluyi. All rights reserved by Agilearning.
 
 - [Slides](http://leoluyi.github.io/RCrawler101_201605_Week2/)
 
