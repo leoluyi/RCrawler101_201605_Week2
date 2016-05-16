@@ -51,6 +51,18 @@ dat2 = doc_str %>%
   readHTMLTable(encoding = "UTF-8") %>%
   .[[1]]
 
+
+#' Data Cleansing
+
+stock_table <- tables[[1]]
+names(stock_table) <- NULL
+stock_table[,1] <- as.character(stock_table[,1])
+stock_table[,5] <- as.character(stock_table[,5])
+
+dat <- data.table::rbindlist(list(stock_table[, 1:4], stock_table[, 5:8]), use.names = FALSE)
+
+
+
 #' Result
 datatable(dat)
 
