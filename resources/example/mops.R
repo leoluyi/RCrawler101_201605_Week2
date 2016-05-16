@@ -2,8 +2,8 @@
 #' title: "公開資訊觀測站(Market Observation Post System)"
 #' author: "Agilelearning, Mansun Kuo "
 #' date: "`r Sys.Date()`"
-#' output: 
-#'   html_document: 
+#' output:
+#'   html_document:
 #'     toc: yes
 #' ---
 
@@ -16,6 +16,7 @@ knitr::opts_knit$set(root.dir = '..')
 
 library(httr)
 library(rvest)
+library(XML)
 library(DT)
 library(data.table)
 
@@ -36,22 +37,21 @@ doc_str2 = content(res2, "text", encoding = "utf8")
 
 #' ## Parser
 
-if (.Platform$OS.type == "windows"){
-    Sys.setlocale(category='LC_ALL', locale='C')
-    dt = doc_str %>% 
-        read_html(encoding = "big-5") %>% 
-        html_nodes(xpath = "//table[2]") %>% 
-        html_table(header=TRUE)
-    Sys.setlocale(category='LC_ALL', locale='cht')
-    dt = apply(dt[[1]],2,function(x) iconv(x,from = "utf8"))
-    colnames(dt) = iconv(colnames(dt), from = "utf8")
-} else{
-    dt = doc_str %>% 
-        read_html(encoding = "big-5") %>% 
-        html_nodes(xpath = "//table[2]") %>% 
-        html_table(header=TRUE)
-    dt = dt[[1]]
-}
+dt <- doc_str %>%
+  read_html(encoding = "UTF-8") %>%
+  html_nodes(xpath = "//table[2]") %>%
+  as.character() %>%
+  # stringr::str_replace_all("&nbsp", "") %>%
+  XML::readHTMLTable(encoding = "UTF-8") %>%
+  .[[1]]
+
+
+#' Parser: `rvest::html_table`
+dt <-  doc_str %>%
+  read_html(encoding = "UTF-8") %>%
+  html_nodes(xpath = "//table[2]") %>%
+  html_table(header=TRUE)
+dt = dt[[1]]
 
 
 #' ## Result
@@ -61,9 +61,9 @@ datatable(dt)
 #' ## Check if identical
 
 parse_table = function(doc_str, encoding = "big-5", xpath = "//table[2]") {
-    dt = doc_str %>% 
-        read_html(encoding = encoding) %>% 
-        html_nodes(xpath = xpath) %>% 
+    dt = doc_str %>%
+        read_html(encoding = encoding) %>%
+        html_nodes(xpath = xpath) %>%
         html_table(header=TRUE)
     dt = dt[[1]]
     return(dt)
