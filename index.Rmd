@@ -171,17 +171,18 @@ __Check your working directory everytime you start to work!__
 Using `getwd`/`setwd` to get/set your working directory.
 
 ```{r working_dir, eval=FALSE}
-wd = getwd()
+(wd = getwd()) # current config
+
 setwd("resources/img")
 getwd()
+
 setwd(wd)
-getwd()
 ```
 
 
 RStudio will set working directory automatically when opening new files.
 
-If you [using Projects](https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects),
+If you [use Projects](https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects),
 RStudio will change working directory for you automatically.
 
 
@@ -394,7 +395,7 @@ m
 # tryCatch
 
 - tryCatch let you deal with error handling in R.
-- It is __IMPORTANT__ when wrapping your crawler into a function because you don't want your function fail without any outcome.
+- Error handling is __IMPORTANT__ when wrapping your crawler into a function because you don't want your function fail without any outcome.
 
 ```{r, eval=FALSE}
 tryCatch({
@@ -517,6 +518,23 @@ A valid HTTP request includes four things:
     - `make.socket` / `read.socket` / `close.socket`
 
 
+# httr
+
+- Basic Features:
+    - HTTP verbs: `GET()`, `POST()`, `HEAD()`... 
+    - `http_status`: Translate http status code
+       [HTTP status](https://zh.wikipedia.org/wiki/HTTP%E7%8A%B6%E6%80%81%E7%A0%81) code
+    - `status_code`
+    - `set_cookies()`: set cookles
+    - `add_headers()`: add additional headers to a request.
+    - `headers()`: Access response headers
+    - `content()`: Retrieve the contents of a request
+        - as = "parsed": detect content type automatically and parse the result
+        - as = "text": return character
+        - as = "raw": return binary
+
+
+
 # Connection: GET Method
 
 Use `GET()` to request data from a specific resource
@@ -553,7 +571,7 @@ library(httr)
 library(rvest)
 url <- "https://www.ptt.cc/bbs/Gossiping/index.html"
 res <- GET(url, 
-           set_cookies('over18'='1'))  # over18 cookie
+           set_cookies(over18="1"))  # over18 cookie
 doc <- res %>% 
   content(as = "text", encoding = "UTF-8") %>% 
   read_html
@@ -562,22 +580,6 @@ doc %>%
   html_nodes(css = ".title a") %>% 
   html_text()
 ```
-
-
-# httr
-
-- Basic Features:
-    - HTTP verbs: `GET()`, `POST()`, `HEAD()`... 
-    - `http_status`: Translate http status code
-       [HTTP status](https://zh.wikipedia.org/wiki/HTTP%E7%8A%B6%E6%80%81%E7%A0%81) code
-    - `status_code`
-    - `set_cookies()`: set cookles
-    - `add_headers()`: add additional headers to a request.
-    - `headers()`: Access response headers
-    - `content()`: Retrieve the contents of a request
-        - as = "parsed": detect content type automatically and parse the result
-        - as = "text": return character
-        - as = "raw": return binary
 
 
 # Cookies
@@ -596,6 +598,10 @@ res <- GET(url,
 # The response status code
 
 ```{r, collapse=TRUE}
+url <- "https://www.ptt.cc/bbs/Gossiping/index.html"
+res <- GET(url, 
+           set_cookies('over18'='1'))  # over18 cookie
+
 # Get an informative description:
 http_status(res)
 
@@ -979,7 +985,7 @@ use package `xmlview` to parse XML content and extract elements.
 
 ```{r}
 students <- read_html("http://leoluyi.github.io/RCrawler101_201605_Week2/resources/data/demo.html") %>% 
-    html_nodes(xpath = "//table") %>%
+    html_nodes(css = "#table1>table") %>%
     html_table()
 students
 ```
@@ -988,7 +994,7 @@ students
 
 - `XML::readHTMLTable()`
 ```{r}
-res_text <- GET("https://zh.wikipedia.org/wiki/%E5%9B%BD%E5%AE%B6%E4%BA%BA%E5%8F%A3%E5%88%97%E8%A1%A8") %>% 
+res_text <- GET("http://leoluyi.github.io/RCrawler101_201605_Week2/resources/data/demo.html") %>% 
   content("text", encoding = "UTF-8") %>% 
   `Encoding<-`("UTF-8")
 
@@ -1000,11 +1006,13 @@ class(doc)
 tables <- XML::readHTMLTable(doc)
 
 # Or you can read table from a html string
-tables2 <- res_text %>% XML::readHTMLTable()
+tables2 <- res_text %>% XML::readHTMLTable(encoding = "UTF-8")
 identical(tables, tables2)
+```
 
-# str(tables) # take a look 
-# View(tables[[2]]) # take a look 
+```{r, eval=FALSE}
+str(tables) # take a look 
+View(tables[[2]]) # take a look 
 ```
 
 
@@ -1040,28 +1048,39 @@ with `jsonlite` in R
 <img src="resources/img/json-parse.png" width=800px>
 </div>
 
-# Parse JSON with package `jsonlite`
+# Parse JSON with `jsonlite`
 
 - Example: PChome API
 ```{r}
 library(jsonlite)
 library(magrittr)
 res <- GET("http://ecshweb.pchome.com.tw/search/v3.3/all/results?q=sony&page=1&sort=rnk/dc")
-res_df = content(res, as = "text") %>% 
-    fromJSON() %>% 
-    .$prods     # equivelent to (function(x) {x$prods})
+```
+
+- `jsonlite::fromJSON()`
+```{r}
+res_df <- content(res, as = "text", encoding = "UTF-8") %>% 
+  fromJSON() %>%
+  .$prods  # equivelent to (function(x) {x$prods})
+```
+```{r, eval=FALSE}
 str(res_df)
 ```
 
 
+# `httr` auto parse json as list
+
 ```{r, eval=FALSE}
-res_list = content(res, as = "parsed")
-str(res_list$prods[[1]])
+res_list <- content(res, as = "parsed")
+# str(res_list)
+res_list$prods[[1]]
 ```
 
-# Parse json with loop
+
+# Combind list of dataframes with loop (not recommended)
 
 ```{r, eval=FALSE}
+# str(res_list$prods)
 res_df2 = data.frame()
 for (i in 1:length(res_list$prods)) {
   res_df2 = rbind(res_df2, 
@@ -1072,7 +1091,7 @@ identical(res_df, res_df2)
 ```
 
 
-# Useful R functions to combine list of dataframes
+# More general way to combine list of dataframes
 
 - `do.call` + `rbind`
 - `data.table::rbindlist`
@@ -1212,7 +1231,7 @@ writeBin(bin, "resources/data/download/uv.json")
 - [PTT Gossiping](resources/example/ptt_gossiping.html)
 - [Starbucks](resources/example/starbucks.html)
 - [Seven Eleven](resources/example/seven_eleven.html)
-- [FamilyMart](resources/example/family_mart.html) # json
+- [FamilyMart](resources/example/family_mart.html) # json & referer
 - [PChome](resources/example/pchome.html)
 - [公開資訊觀測站](resources/example/mops.html)
 - [中央氣象局觀測資料查詢系統](resources/example/cwb.html)
