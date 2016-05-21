@@ -17,6 +17,7 @@ knitr::opts_knit$set(root.dir = '..')
 library(httr)
 library(rvest)
 library(XML)
+library(data.table)
 library(DT)
 
 
@@ -54,15 +55,18 @@ dat2 = doc_str %>%
 
 #' Data Cleansing
 
-stock_table <- tables[[1]]
+stock_table <- dat2
 names(stock_table) <- NULL
 stock_table[,1] <- as.character(stock_table[,1])
 stock_table[,5] <- as.character(stock_table[,5])
 
-dat <- data.table::rbindlist(list(stock_table[, 1:4], stock_table[, 5:8]), use.names = FALSE)
+dat <- data.table::rbindlist(
+  list(stock_table[, 1:4], stock_table[, 5:8]),
+  use.names = FALSE)
 
-
+names(dat) <- c("券商", "買進", "賣出", "買賣超")
 
 #' Result
-datatable(dat)
+DT::datatable(dat)
+
 

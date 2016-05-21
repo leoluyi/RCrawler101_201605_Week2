@@ -12,10 +12,12 @@
 knitr::opts_knit$set(root.dir = '..')
 
 #' [全家FamilyMart (店舖查詢)](http://www.family.com.tw/marketing/inquiry.aspx)
-
+#' (Request Headers: Referer阻擋)
 
 library(httr)
 library(jsonlite)
+library(magrittr)
+library(DT)
 
 res <- GET("http://api.map.com.tw/net/familyShop.aspx",
            add_headers(
@@ -38,5 +40,5 @@ jsonDataString <- resStr %>%
   sub("^[^\\[]*","",.) %>%
   sub("[^\\]]*$","",.)
 
-jsonData = fromJSON(jsonDataString)
-# View(data.frame(do.call(rbind,jsonData)))
+dt <- fromJSON(jsonDataString)
+DT::datatable(dt)
