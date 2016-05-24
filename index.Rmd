@@ -415,12 +415,12 @@ tryCatch({
   message(e)
   # Choose a return value in case of error
   return(NA)
-},
 }, finally {
   message("Some other message at the end")
   # finally:
   # Here goes everything that should be executed at the end,
   # regardless of success or error.
+  # Usually it's used for releasing resources.
   # If you want more than one expression to be executed, then you 
   # need to wrap them in curly brackets ({...}); otherwise you could
   # just have written 'finally=<expression>' 
@@ -544,7 +544,6 @@ Use `GET()` to request data from a specific resource
 ```{r, eval=FALSE}
 ## Not Run
 library(httr)
-library(rvest)
 res <- GET(
   url = "http://httpbin.org/get",
   add_headers(a = 1, b = 2),
@@ -569,9 +568,13 @@ content(res, as = "parsed", encoding = "UTF-8")
 library(magrittr)
 library(httr)
 library(rvest)
+
+## Connection
 url <- "https://www.ptt.cc/bbs/Gossiping/index.html"
 res <- GET(url, 
            set_cookies(over18="1"))  # over18 cookie
+
+## Parsing
 doc <- res %>% 
   content(as = "text", encoding = "UTF-8") %>% 
   read_html
@@ -627,19 +630,15 @@ stop_for_status(res)
 ## Not Run
 library(httr)
 library(rvest)
-res1 <- POST(url = "http://httpbin.org/post", 
-             add_headers(a = 1, b = 2),
-             set_cookies(c = 1, d = 2),
-             body = "A simple text string or raw vector")
 
-res2 <- POST(url = "http://httpbin.org/post",
+res <- POST(url = "http://httpbin.org/post",
              add_headers(a = 1, b = 2),
              set_cookies(c = 1, d = 2),
-             body = list(x = "A simple text string", 
+             body = list(x = "hello", 
                          y = "hihi"))
 
-content(res2, as = "text", encoding = "UTF-8")
-content(res2, as = "parsed", encoding = "UTF-8")
+content(res, as = "text", encoding = "UTF-8")
+content(res, as = "parsed", encoding = "UTF-8")
 ```
 
 
@@ -677,7 +676,9 @@ with `add_headers()` to make a request.
 <img src="resources/img/httr-content-type.png" width=800px>
 </div>
 
-# The Response Body: `httr::content()`
+# The Response Body
+
+## `httr::content()`
 
 ```{r}
 res <- GET("https://www.ptt.cc/bbs/NBA/M.1463302851.A.8D7.html")
@@ -685,22 +686,22 @@ res <- GET("https://www.ptt.cc/bbs/NBA/M.1463302851.A.8D7.html")
 
 
 + binary
-```{r, collapse=TRUE}
-(bin <- content(res, "raw")) %>% head(200) # raw (binary) vector
+```{r}
+(bin <- content(res, as = "raw")) %>% head(200) # raw (binary) vector
 # writeBin(bin, "myfile.txt") # the highest fidelity way of saving files to disk
 ```
 
 + text
-```{r, collapse=TRUE}
-content(res, "text", encoding = "UTF-8") %>%  # accesses the body as a character vector
+```{r}
+content(res, as = "text", encoding = "UTF-8") %>%  # accesses the body as a character vector
   `Encoding<-`("UTF-8")
 ```
 
 + auto parsed  
 httr provides a number of default parsers for common file types:  
 html_document, csv, json, jpeg, png. See `?httr::content`
-```{r, collapse=TRUE}
-content(res, "parsed")
+```{r}
+content(res, as = "parsed")
 ```
 
 
@@ -770,15 +771,14 @@ write a crawler
 
 You can assign query parameter with `query()` 
 
+- Example: http://ecshweb.pchome.com.tw/search/v3.3/?q=sony
 ```{r}
 res1 <- GET(
   "http://ecshweb.pchome.com.tw/search/v3.3/all/results?q=sony&page=1&sort=rnk/dc"
 )
 
-url2 <- "http://ecshweb.pchome.com.tw/search/v3.3/all/results"
-res2 <- GET(url2,
-           query = list(q="sony", page="1", sort="rnk/dc"))
-identical(res1$content, res2$content)
+res2 <- GET("http://ecshweb.pchome.com.tw/search/v3.3/all/results",
+            query = list(q="sony", page="1", sort="rnk/dc"))
 ```
 
 
@@ -882,7 +882,7 @@ GET(url) %>% content(as="text") %>% rvest::read_html()
 
 # Tree Structure of HTML (Document Object Model, DOM)
 
-```
+```{xml}
 <a href = "www.meetup.com/Taiwan-R">
   Taiwan R User Group Website
 </a>
@@ -980,8 +980,9 @@ use package `xmlview` to parse XML content and extract elements.
 
 # Extract table
 
-- `rvest::html_table`  
-(`rvest::html_table` is temperarily not working with unicode data on Windows.)
+## `rvest::html_table()`  
+
+(`html_table()` is temperarily not working with non-ascii data on Windows.)
 
 ```{r}
 students <- read_html("http://leoluyi.github.io/RCrawler101_201605_Week2/resources/data/demo.html") %>% 
@@ -992,22 +993,17 @@ students
 
 # Extract table
 
-- `XML::readHTMLTable()`
+## `XML::readHTMLTable()`
+
+<a target="_blank" href="http://leoluyi.github.io/RCrawler101_201605_Week2/resources/data/demo.html">demo_page<a>
+
 ```{r}
 res_text <- GET("http://leoluyi.github.io/RCrawler101_201605_Week2/resources/data/demo.html") %>% 
   content("text", encoding = "UTF-8") %>% 
   `Encoding<-`("UTF-8")
 
-# create `HTMLInternalDocument` for following use
-doc <- XML::htmlParse(res_text, encoding = "UTF-8")
-class(doc)
-
-# Parse tables with XML::readHTMLTable()
-tables <- XML::readHTMLTable(doc)
-
-# Or you can read table from a html string
-tables2 <- res_text %>% XML::readHTMLTable(encoding = "UTF-8")
-identical(tables, tables2)
+# read and extract tables from html string
+tables <- res_text %>% XML::readHTMLTable(encoding = "UTF-8")
 ```
 
 ```{r, eval=FALSE}
@@ -1063,23 +1059,23 @@ res_df <- content(res, as = "text", encoding = "UTF-8") %>%
   fromJSON() %>%
   .$prods  # equivelent to (function(x) {x$prods})
 ```
-```{r, eval=FALSE}
-str(res_df)
+```{r, collapse=TRUE}
+head(res_df)
 ```
 
 
 # `httr` auto parse json as list
 
-```{r, eval=FALSE}
+```{r}
 res_list <- content(res, as = "parsed")
 # str(res_list)
 res_list$prods[[1]]
 ```
 
 
-# Combind list of dataframes with loop (not recommended)
+# Combind list of dataframes with loop
 
-```{r, eval=FALSE}
+```{r}
 # str(res_list$prods)
 res_df2 = data.frame()
 for (i in 1:length(res_list$prods)) {
@@ -1090,6 +1086,7 @@ for (i in 1:length(res_list$prods)) {
 identical(res_df, res_df2)
 ```
 
+(better use `do.call` + `rbind`)
 
 # More general way to combine list of dataframes
 
@@ -1097,25 +1094,38 @@ identical(res_df, res_df2)
 - `data.table::rbindlist`
 
 
-# Parse Parse list of data.frames with `do.call` + `rbind`
+# Parse Parse list of dataframes with
 
-```{r, eval=FALSE}
-res_df3 = data.frame(do.call(rbind, res_list$prods))
+## `do.call` + `rbind`
+
+```{r}
+# make a list of dataframes
+df_list <- lapply(res_list$prods, as.data.frame, stringsAsFactors = FALSE)
+
+# combine dataframes
+res_df3 = do.call(rbind, df_list)
 identical(res_df, res_df3)
 
-# An ugly data.frame
-str(res_df3)
+# str(res_df3)
 ```
+
+## `data.table::rbindlist`
+
+```{r}
+library(data.table)
+res_df4 = rbindlist(df_list)
+head(res_df4)
+```
+
 
 ---
 
 # 非結構化資料解析: Regular Expression
 
-Package: `stringr`
+## Package: `stringr`
 - `str_replace()`, `str_replace_all()`
 - `str_extract()`, `str_extract_all()`
-
-```{r, collapse=TRUE}
+```{r}
 library(stringr)
 fruits <- c("one apple", "two pears", "three bananas")
 str_replace(fruits, "[aeiou]", "-")
