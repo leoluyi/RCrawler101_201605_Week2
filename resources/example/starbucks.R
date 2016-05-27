@@ -11,7 +11,7 @@
 # set root dir when rendering
 knitr::opts_knit$set(root.dir = '..')
 
-#' [Starbucks](http://www.starbucks.com.tw/stores/storesearch/stores_storesearch.jspx)
+#' [Starbucks](http://www.starbucks.com.tw/stores/storesearch.jspx)
 
 
 library(httr)
@@ -22,28 +22,38 @@ library(jsonlite)
 #' ## Region
 
 url = "http://www.starbucks.com.tw/store/region.serx"
-body = "cid=11"
+header = c(
+  #"Accept" = "*/*",
+  # "Accept-Encoding" = "gzip, deflate",
+  # "Accept-Language" = "zh-TW,zh;q=0.8,en-US;q=0.6,en;q=0.4,zh-CN;q=0.2",
+  # "Connection" = "keep-alive",
+  # "Content-Length" = 6,
+  "Content-Type" = "application/x-www-form-urlencoded"#,
+  # "Cookie" = "JSESSIONID=E79E971BEEB5FE5A54A41A51A2EDC71C; citrix_ns_id=gOyZ2AnJ6WsydtGrLTgjpUCGJHIA020; citrix_ns_id_.starbucks.com.tw_%2F_wat=SlNFU1NJT05JRF9f?KCaPwF2HVIKd4ibm6ixR88jzDOEA&; _gat=1; _ga=GA1.3.1117139448.1446024192",
+  # "Host" = "www.starbucks.com.tw",
+  # "Origin" = "http://www.starbucks.com.tw",
+  # "Referer" = "http://www.starbucks.com.tw/stores/storesearch/stores_storesearch.jspx",
+  # "User-Agent" = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36",
+  # "X-Requested-With" = "XMLHttpRequest"
+)
+
+# Use character body
 res = POST(url,
-           body = body,
-           add_headers(
-             #"Accept" = "*/*",
-             # "Accept-Encoding" = "gzip, deflate",
-             # "Accept-Language" = "zh-TW,zh;q=0.8,en-US;q=0.6,en;q=0.4,zh-CN;q=0.2",
-             # "Connection" = "keep-alive",
-             # "Content-Length" = 6,
-             "Content-Type" = "application/x-www-form-urlencoded"#,
-             # "Cookie" = "JSESSIONID=E79E971BEEB5FE5A54A41A51A2EDC71C; citrix_ns_id=gOyZ2AnJ6WsydtGrLTgjpUCGJHIA020; citrix_ns_id_.starbucks.com.tw_%2F_wat=SlNFU1NJT05JRF9f?KCaPwF2HVIKd4ibm6ixR88jzDOEA&; _gat=1; _ga=GA1.3.1117139448.1446024192",
-             # "Host" = "www.starbucks.com.tw",
-             # "Origin" = "http://www.starbucks.com.tw",
-             # "Referer" = "http://www.starbucks.com.tw/stores/storesearch/stores_storesearch.jspx",
-             # "User-Agent" = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36",
-             # "X-Requested-With" = "XMLHttpRequest"
-           ))
-result = content(res, as = "text")
+           add_headers(header),
+           body = "cid=11")
+result = content(res, as = "text") %>% `Encoding<-`("UTF-8")
+
+# Use named list body
+res = POST(url,
+           add_headers(header),
+           body = list(cid = "11"),
+           encode = "form")
+result2 = content(res, as = "text") %>% `Encoding<-`("UTF-8")
+
+# Parse JSON
 regions = fromJSON(result)
 str(regions)
 regions$region[[1]]
-
 
 
 #' ## Store
@@ -69,13 +79,14 @@ res = POST(url, body = body, add_headers(header))
 bin = content(res, as = "raw")
 writeBin(bin, "example/starbucks_stores.html")
 
-# Extract stories
-result = content(res, as = "text")
+# Extract stores
+result = content(res, as = "text") %>%
+  `Encoding<-`("UTF-8") # solve encoding issue in Windows
 read_html(result, encoding = "utf-8") %>%
-    html_nodes(xpath = "//div[@class='searchstore_name']") %>%
-    iconv(from = "UTF-8", to = "UTF-8") # solve encoding issue in Windows
+  html_nodes(xpath = "//div[@class='searchstore_name']")
+
 
 # XML
 htmlParse(res, encoding = 'utf8') %>%
-    xpathSApply("//div[@class='searchstore_name']", xmlValue)
+  xpathSApply("//div[@class='searchstore_name']", xmlValue)
 

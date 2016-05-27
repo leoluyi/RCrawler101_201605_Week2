@@ -35,7 +35,18 @@ body = list(encodeURIComponent="1",
 res2 = POST(url, body = body, encode = "form")
 doc_str2 = content(res2, "text", encoding = "utf8")
 
+
 #' ## Parser
+
+# Use `rvest::html_table()`
+dt <-  doc_str %>%
+  read_html(encoding = "UTF-8") %>%
+  html_nodes(xpath = "//table[2]") %>%
+  html_table(header=TRUE)
+dt <- dt[[1]]
+
+
+# Use `XML::readHTMLTable()`
 
 dt <- doc_str %>%
   read_html(encoding = "UTF-8") %>%
@@ -44,14 +55,6 @@ dt <- doc_str %>%
   # stringr::str_replace_all("&nbsp", "") %>%
   XML::readHTMLTable(encoding = "UTF-8") %>%
   .[[1]]
-
-
-#' Parser: `rvest::html_table`
-dt <-  doc_str %>%
-  read_html(encoding = "UTF-8") %>%
-  html_nodes(xpath = "//table[2]") %>%
-  html_table(header=TRUE)
-dt = dt[[1]]
 
 
 #' ## Result
@@ -80,10 +83,13 @@ if (.Platform$OS.type == "windows"){
 
 #' ## Who is the key person
 
-dt = data.table(dt)
+dt <- data.table(dt)
 positions = c("董事長", "總經理", "發言人")
-heads = melt(dt, id.var = "公司名稱", measure.vars = positions,
+names(dt)[names(dt) == "公司名稱"] <- "corp_name"
+heads = melt(dt, id.var = "corp_name", measure.vars = positions,
              variable.name = "position", value.name = "person")
 heads_count = heads[, .(count = .N), by = "person"][count > 1, ][order(-count), ]
 heads_count = suppressWarnings(heads_count[!person %in% positions, ])
+
 datatable(heads_count)
+

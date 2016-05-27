@@ -11,7 +11,7 @@
 
 <meta name="author" content="Agilelearning, Mansun Kuo" />
 
-<meta name="date" content="2016-05-21" />
+<meta name="date" content="2016-05-28" />
 
 <title>Yahoo Stock</title>
 
@@ -123,15 +123,16 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">Yahoo Stock</h1>
 <h4 class="author"><em>Agilelearning, Mansun Kuo</em></h4>
-<h4 class="date"><em>2016-05-21</em></h4>
+<h4 class="date"><em>2016-05-28</em></h4>
 
 </div>
 
 <div id="TOC">
 <ul>
 <li><a href="#connector">Connector</a></li>
-<li><a href="#parser-solution-1-httrhtml_table">Parser Solution 1: <code>httr::html_table()</code></a></li>
-<li><a href="#parser-solution-2-xmlxmlhtmlparseres_text-encoding-utf-8">Parser Solution 2: XMLXML::htmlParse(res_text, encoding = “UTF-8”)</a></li>
+<li><a href="#parser">Parser</a></li>
+<li><a href="#data-cleansing">Data Cleansing</a></li>
+<li><a href="#result">Result</a></li>
 </ul>
 </div>
 
@@ -144,49 +145,70 @@ library(DT)</code></pre>
 <div id="connector" class="section level2">
 <h2>Connector</h2>
 <pre class="r"><code>Target_URL = &quot;http://tw.stock.yahoo.com/d/s/major_2451.html&quot;
-res = GET(Target_URL)</code></pre>
-</div>
-<div id="parser-solution-1-httrhtml_table" class="section level2">
-<h2>Parser Solution 1: <code>httr::html_table()</code></h2>
-<pre class="r"><code># check content-type
+res = GET(Target_URL)
+
+
+# check content-type
 headers(res)$`content-type`</code></pre>
 <pre><code>## [1] &quot;text/html; charset=Big5&quot;</code></pre>
-<pre class="r"><code># read as text (Big5)
-doc_str = content(res, as = &quot;text&quot;, encoding = &quot;Big5&quot;)
+<pre class="r"><code>doc_str = content(res, as = &quot;text&quot;, encoding = &quot;Big5&quot;)</code></pre>
+</div>
+<div id="parser" class="section level2">
+<h2>Parser</h2>
+<pre class="r"><code># Solution 1: `httr::html_table()`
 
-## Parser
 if (.Platform$OS.type == &quot;unix&quot;){
   dat = doc_str %&gt;%
     read_html() %&gt;%
     html_nodes(xpath = &quot;//table[1]//table[2]&quot;) %&gt;%
     html_table(header=TRUE)
   dat = dat[[1]]
-}</code></pre>
-</div>
-<div id="parser-solution-2-xmlxmlhtmlparseres_text-encoding-utf-8" class="section level2">
-<h2>Parser Solution 2: XMLXML::htmlParse(res_text, encoding = “UTF-8”)</h2>
-<pre class="r"><code>## Parser
+}
+
+
+# Solution 2: `XML::htmlParse(res_text, encoding = &quot;UTF-8&quot;)`
+
 dat2 = doc_str %&gt;%
   read_html(encoding = &quot;UTF-8&quot;) %&gt;%
   html_nodes(xpath = &quot;//table[1]//table[2]&quot;) %&gt;%
   as.character() %&gt;%
   readHTMLTable(encoding = &quot;UTF-8&quot;) %&gt;%
-  .[[1]]</code></pre>
-<p>Data Cleansing</p>
+  .[[1]]
+
+head(dat2)</code></pre>
+<pre><code>##   買超券商 買進 賣出 買超 賣超券商 買進 賣出 賣超
+## 1     元富  181    0 +181 凱基證券   34  153 -119
+## 2 花旗環球   67    0  +67 美商高盛   34  113  -79
+## 3 華南永昌   24    1  +23 摩根大通   11   83  -72
+## 4 瑞士信貸   44   22  +22     臺銀    0   23  -23
+## 5 台灣工銀   15    0  +15     美林    7   20  -13
+## 6 元大證券   28   15  +13 群益金鼎    4   17  -13</code></pre>
+</div>
+<div id="data-cleansing" class="section level2">
+<h2>Data Cleansing</h2>
 <pre class="r"><code>stock_table &lt;- dat2
 names(stock_table) &lt;- NULL
-stock_table[,1] &lt;- as.character(stock_table[,1])
-stock_table[,5] &lt;- as.character(stock_table[,5])
+stock_table[,c(1, 5)] &lt;- sapply(stock_table[, c(1, 5)], as.character)
+stock_table[, c(2:4, 6:8)] &lt;- sapply(stock_table[, c(2:4, 6:8)],
+                                     function(x) {
+                                       as.integer(as.character(x))
+                                     })
+names(stock_table)[c(1, 5)] &lt;- &quot;券商&quot;
+names(stock_table)[c(2, 6)] &lt;- &quot;買進&quot;
+names(stock_table)[c(3, 7)] &lt;- &quot;賣出&quot;
+names(stock_table)[c(4, 8)] &lt;- &quot;買賣超&quot;
 
-dat &lt;- data.table::rbindlist(
-  list(stock_table[, 1:4], stock_table[, 5:8]),
-  use.names = FALSE)
+dt &lt;- rbind(df, stock_table[, 1:4], stock_table[, 5:8])
 
-names(dat) &lt;- c(&quot;券商&quot;, &quot;買進&quot;, &quot;賣出&quot;, &quot;買賣超&quot;)</code></pre>
-<p>Result</p>
-<pre class="r"><code>DT::datatable(dat)</code></pre>
-<div id="htmlwidget-1726" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-1726">{"x":{"data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30"],["美林","台灣摩根士","港商德意志","瑞士信貸","香港上海匯","台灣工銀","國泰證券","凱基證券","德信證券","日盛證券","彰銀","港商法國興","永興","福邦證券","金港證券","花旗環球","土銀","中國信託","新光證券","國票證券","玉山證券","摩根大通","元大證券","富邦證券","致和證券","兆豐證券","元富","永豐金證券","合庫證券","新加坡商瑞"],["80","51","43","25","17","11","24","11","3","1","0","0","0","0","0","0","0","0","0","0","0","1","13","4","0","1","4","3","0","5"],["11","6","17","8","0","0","19","6","0","0","0","0","0","0","0","34","22","19","17","12","11","10","22","12","7","7","9","8","5","9"],["+69","+45","+26","+17","+17","+11","+5","+5","+3","+1","0","0","0","0","0","-34","-22","-19","-17","-12","-11","-9","-9","-8","-7","-6","-5","-5","-5","-4"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> \u003c/th>\n      <th>券商\u003c/th>\n      <th>買進\u003c/th>\n      <th>賣出\u003c/th>\n      <th>買賣超\u003c/th>\n    \u003c/tr>\n  \u003c/thead>\n\u003c/table>","options":{"order":[],"autoWidth":false,"orderClasses":false,"columnDefs":[{"orderable":false,"targets":0}]},"callback":null,"filter":"none"},"evals":[],"jsHooks":[]}</script>
+# dt &lt;- data.table::rbindlist(
+#   list(stock_table[, 1:4], stock_table[, 5:8]),
+#   use.names = FALSE)</code></pre>
+</div>
+<div id="result" class="section level2">
+<h2>Result</h2>
+<pre class="r"><code>DT::datatable(dt)</code></pre>
+<div id="htmlwidget-8377" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-8377">{"x":{"data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30"],["元富","花旗環球","華南永昌","瑞士信貸","台灣工銀","元大證券","統一","聯邦商銀","鑫豐證券","永豐金證券","富邦證券","第一金","康和證券","土銀","日茂","凱基證券","美商高盛","摩根大通","臺銀","美林","群益金鼎","新加坡商瑞","新光證券","港商德意志","台灣摩根士","亞東","大眾證券","台中銀","國票證券","玉山證券"],[181,67,24,44,15,28,12,10,5,6,12,1,1,0,0,34,34,11,0,7,4,0,0,4,6,0,0,0,0,0],[0,0,1,22,0,15,1,0,0,1,9,0,0,0,0,153,113,83,23,20,17,11,10,11,11,2,2,2,2,1],[181,67,23,22,15,13,11,10,5,5,3,1,1,0,0,-119,-79,-72,-23,-13,-13,-11,-10,-7,-5,-2,-2,-2,-2,-1]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> \u003c/th>\n      <th>券商\u003c/th>\n      <th>買進\u003c/th>\n      <th>賣出\u003c/th>\n      <th>買賣超\u003c/th>\n    \u003c/tr>\n  \u003c/thead>\n\u003c/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,4]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false},"callback":null,"filter":"none"},"evals":[],"jsHooks":[]}</script>
 </div>
 
 
