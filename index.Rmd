@@ -687,11 +687,13 @@ add_headers(a = 1, b = 2)
 add_headers(.headers = c(a = "1", b = "2"))
 ```
 
-- [Starbucks](resources/example/starbucks.html)
+- [FamilyMart](resources/example/family_mart.html)
 
-<a href="http://www.starbucks.com.tw/stores/storesearch.jspx">
-<img src="resources/img/starbucks.png" width="600px">
+<a target="_blank" href="http://www.family.com.tw/marketing/inquiry.aspx">
+<img src="resources/img/starbucks.png" width="400px">
 </a>
+
+
 
 # Connection: POST method
 
@@ -733,6 +735,7 @@ content(res, as = "parsed", encoding = "UTF-8")
 
 Try to post a message in 
 [App Engine GuestBook](http://apt-bonbon-93413.appspot.com/)
+
 
 ---
 
