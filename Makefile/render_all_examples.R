@@ -10,7 +10,13 @@ if(length(pkg_new)) install.packages(pkg_new)
 if("xmlview" %in% pkg_new) devtools::install_github("hrbrmstr/xmlview")
 rm(pkg_new, pkg_list)
 
+
+## render all examples
 examples <- list.files("resources/example", pattern = ".*\\.R", full.names = TRUE)
 for (example in examples) {
     render(example)
 }
+
+
+## render install_R.rmd
+render("install_R.Rmd")
