@@ -33,7 +33,7 @@ res <- GET("http://api.map.com.tw/net/familyShop.aspx",
              key = "6F30E8BF706D653965BDE302661D1241F8BE9EBC"
            ))
 
-resStr <- content(res,as="text")
+resStr <- content(res,as="text") %>% `Encoding<-`("UTF-8")
 
 
 jsonDataString <- resStr %>%

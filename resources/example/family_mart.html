@@ -11,7 +11,7 @@
 
 <meta name="author" content="Agilelearning, Mansun Kuo" />
 
-<meta name="date" content="2016-05-21" />
+<meta name="date" content="2016-05-28" />
 
 <title>全家FamilyMart (店舖查詢)</title>
 
@@ -123,7 +123,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">全家FamilyMart (店舖查詢)</h1>
 <h4 class="author"><em>Agilelearning, Mansun Kuo</em></h4>
-<h4 class="date"><em>2016-05-21</em></h4>
+<h4 class="date"><em>2016-05-28</em></h4>
 
 </div>
 
@@ -148,7 +148,7 @@ res &lt;- GET(&quot;http://api.map.com.tw/net/familyShop.aspx&quot;,
              key = &quot;6F30E8BF706D653965BDE302661D1241F8BE9EBC&quot;
            ))
 
-resStr &lt;- content(res,as=&quot;text&quot;)
+resStr &lt;- content(res,as=&quot;text&quot;) %&gt;% `Encoding&lt;-`(&quot;UTF-8&quot;)
 
 
 jsonDataString &lt;- resStr %&gt;%
@@ -157,8 +157,8 @@ jsonDataString &lt;- resStr %&gt;%
 
 dt &lt;- fromJSON(jsonDataString)
 DT::datatable(dt)</code></pre>
-<div id="htmlwidget-2462" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-2462">{"x":{"data":[["1","2","3","4","5","6"],["全家基隆廟口店","全家基隆仁四店","全家基隆新站前店","全家基隆忠孝店","全家基隆仁愛店","全家基隆精一店"],["02-24289166","02-24265932","02-24273646","02-24257478","02-24259270","02-24249183"],["02-77230578","02-77230577","02-77230579","02-77293995","02-77462480","02-77230581"],[121.742868,121.741188,121.739715,121.739496,121.744032,121.741068],[25.128415,25.128379,25.131325,25.130303,25.128972,25.125948],["基隆市仁愛區仁三路33號","基隆市仁愛區仁四路52號","基隆市仁愛區忠一路19號","基隆市仁愛區忠二路39號","基隆市仁愛區愛四路56號","基隆市仁愛區精一路41號"],[15829,18684,18828,54428,53146,10763],["011629","013825","010688","014428","013146","015066"],["005829","008684","008828","014428","013146","000763"],["200","200","200","200","200","200"],["COFFEE,SWEETPOTATO,WiFi,oneice","COFFEE,SWEETPOTATO,WiFi,Rest,veg,twoice","COFFEE,SWEETPOTATO,WiFi,icecream,Rest,veg,oneice,muffin","COFFEE,SWEETPOTATO,Toilet,Rest","COFFEE,SWEETPOTATO,WiFi,Toilet,Rest,twoice","COFFEE,SWEETPOTATO,WiFi"],["仁三路","仁四路","忠一路","忠二路","愛四路","精一路"],[null,"Y",null,null,"Y",null]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> \u003c/th>\n      <th>NAME\u003c/th>\n      <th>TEL\u003c/th>\n      <th>POSTel\u003c/th>\n      <th>px\u003c/th>\n      <th>py\u003c/th>\n      <th>addr\u003c/th>\n      <th>SERID\u003c/th>\n      <th>pkey\u003c/th>\n      <th>oldpkey\u003c/th>\n      <th>post\u003c/th>\n      <th>all\u003c/th>\n      <th>road\u003c/th>\n      <th>twoice\u003c/th>\n    \u003c/tr>\n  \u003c/thead>\n\u003c/table>","options":{"columnDefs":[{"className":"dt-right","targets":[4,5,7]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false},"callback":null,"filter":"none"},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-3472" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-3472">{"x":{"data":[["1","2","3","4","5","6"],["全家基隆廟口店","全家基隆仁四店","全家基隆新站前店","全家基隆忠孝店","全家基隆仁愛店","全家基隆精一店"],["02-24289166","02-24265932","02-24273646","02-24257478","02-24259270","02-24249183"],["02-77230578","02-77230577","02-77230579","02-77293995","02-77462480","02-77230581"],[121.742868,121.741188,121.739715,121.739496,121.744032,121.741068],[25.128415,25.128379,25.131325,25.130303,25.128972,25.125948],["基隆市仁愛區仁三路33號","基隆市仁愛區仁四路52號","基隆市仁愛區忠一路19號","基隆市仁愛區忠二路39號","基隆市仁愛區愛四路56號","基隆市仁愛區精一路41號"],[15829,18684,18828,54428,53146,10763],["011629","013825","010688","014428","013146","015066"],["005829","008684","008828","014428","013146","000763"],["200","200","200","200","200","200"],["COFFEE,SWEETPOTATO,WiFi,oneice","COFFEE,SWEETPOTATO,WiFi,Rest,veg,twoice","COFFEE,SWEETPOTATO,WiFi,icecream,Rest,veg,oneice,muffin","COFFEE,SWEETPOTATO,Toilet,Rest","COFFEE,SWEETPOTATO,WiFi,Toilet,Rest,twoice","COFFEE,SWEETPOTATO,WiFi"],["仁三路","仁四路","忠一路","忠二路","愛四路","精一路"],[null,"Y",null,null,"Y",null]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> \u003c/th>\n      <th>NAME\u003c/th>\n      <th>TEL\u003c/th>\n      <th>POSTel\u003c/th>\n      <th>px\u003c/th>\n      <th>py\u003c/th>\n      <th>addr\u003c/th>\n      <th>SERID\u003c/th>\n      <th>pkey\u003c/th>\n      <th>oldpkey\u003c/th>\n      <th>post\u003c/th>\n      <th>all\u003c/th>\n      <th>road\u003c/th>\n      <th>twoice\u003c/th>\n    \u003c/tr>\n  \u003c/thead>\n\u003c/table>","options":{"columnDefs":[{"className":"dt-right","targets":[4,5,7]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false},"callback":null,"filter":"none"},"evals":[],"jsHooks":[]}</script>
 
 
 
