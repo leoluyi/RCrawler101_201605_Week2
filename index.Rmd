@@ -811,7 +811,7 @@ charToRaw(aa)
 #> [1] "\xa7A\xa6n\xb6\xdc"
 Encoding(aa_big5)
 #> [1] "unknown"
-harToRaw(aa_big5)
+charToRaw(aa_big5)
 #> [1] a7 41 a6 6e b6 dc
 ```
 
